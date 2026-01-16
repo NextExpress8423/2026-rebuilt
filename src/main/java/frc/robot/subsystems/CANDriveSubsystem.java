@@ -12,6 +12,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,10 +22,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.DriveConstants.*;
 
 public class CANDriveSubsystem extends SubsystemBase {
+
   private final SparkMax leftLeader;
   private final SparkMax leftFollower;
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
+  private final DifferentialDriveKinematics kinematics;
+  private final DifferentialDriveOdometry odometryKinematics;
+  //WPI_Pigeon gyro;
 
   private final DifferentialDrive drive;
 
@@ -32,6 +39,10 @@ public class CANDriveSubsystem extends SubsystemBase {
     leftFollower = new SparkMax(LEFT_FOLLOWER_ID, MotorType.kBrushed);
     rightLeader = new SparkMax(RIGHT_LEADER_ID, MotorType.kBrushed);
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushed);
+    kinematics = new DifferentialDriveKinematics(23*0.0254);
+    odometryKinematics = new DifferentialDriveOdometry(null, null, null);
+
+
 
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
