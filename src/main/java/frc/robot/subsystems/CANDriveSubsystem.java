@@ -6,12 +6,15 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.units.measure.Distance;
@@ -19,6 +22,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.Constants.DriveConstants.*;
 
 public class CANDriveSubsystem extends SubsystemBase {
@@ -28,8 +33,8 @@ public class CANDriveSubsystem extends SubsystemBase {
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
   private final DifferentialDriveKinematics kinematics;
-  private final DifferentialDriveOdometry odometryKinematics;
-  //WPI_Pigeon gyro;
+  private final DifferentialDriveOdometry odometry;
+  WPI_PigeonIMU gyro;
 
   private final DifferentialDrive drive;
 
@@ -39,10 +44,13 @@ public class CANDriveSubsystem extends SubsystemBase {
     leftFollower = new SparkMax(LEFT_FOLLOWER_ID, MotorType.kBrushed);
     rightLeader = new SparkMax(RIGHT_LEADER_ID, MotorType.kBrushed);
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushed);
-    kinematics = new DifferentialDriveKinematics(23*0.0254);
-    odometryKinematics = new DifferentialDriveOdometry(null, null, null);
-
-
+    kinematics = kDriveKinematics;
+    gyro = new WPI_PigeonIMU(0);
+    odometry = new DifferentialDriveOdometry(
+      Rotation2d.fromDegrees(gyro.getAngle()), 
+      leftLeader.getEncoder().getPosition(), 
+      rightLeader.getEncoder().getPosition(),
+      new Pose2d(0.0,0.0,Rotation2d.fromDegrees(0.0)));
 
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
@@ -80,9 +88,12 @@ public class CANDriveSubsystem extends SubsystemBase {
     config.inverted(true);
     leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
-
+  
   @Override
   public void periodic() {
+    odometry.update(Rotation2d.fromDegrees(gyro.getAngle()), 
+      leftLeader.getEncoder().getPosition(), 
+      rightLeader.getEncoder().getPosition());
   }
 
   // Command factory to create command to drive the robot with joystick inputs.
