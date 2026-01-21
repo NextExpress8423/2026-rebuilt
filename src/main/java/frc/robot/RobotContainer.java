@@ -61,7 +61,8 @@ public class RobotContainer {
    * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void configureBindings() {
+  private void 
+  configureBindings() {
 
     // While the left bumper on operator controller is held, intake Fuel
     operatorController.leftBumper()
@@ -87,7 +88,7 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(
         driveSubsystem.driveArcade(
             () -> -driverController.getLeftY() * DRIVE_SCALING,
-            () -> -driverController.getRightX() * ROTATION_SCALING));
+            () -> driverController.getRightX() * ROTATION_SCALING));
   }
 
   /**
