@@ -19,14 +19,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.FuelConstants.*;
 
 public class CANFuelSubsystem extends SubsystemBase {
-  private final TalonFX feederRoller;
-  private final SparkMax intakeLauncherRoller;
+  private final SparkMax feederRoller;
+  private final TalonFX intakeLauncherRoller;
 
   /** Creates a new CANBallSubsystem. */
   public CANFuelSubsystem() {
     // create brushed motors for each of the motors on the launcher mechanism
-    intakeLauncherRoller = new SparkMax(INTAKE_LAUNCHER_MOTOR_ID, MotorType.kBrushless);
-    feederRoller = new TalonFX(FEEDER_MOTOR_ID);
+    feederRoller = new SparkMax(FEEDER_MOTOR_ID, MotorType.kBrushless);
+    intakeLauncherRoller = new TalonFX(INTAKE_LAUNCHER_MOTOR_ID);
 
     // put default values for various fuel operations onto the dashboard
     // all methods in this subsystem pull their values from the dashbaord to allow
@@ -41,20 +41,20 @@ public class CANFuelSubsystem extends SubsystemBase {
     // create the configuration for the feeder roller, set a current limit and apply
     // the config to the controller
 
-    TalonFXConfiguration feederConfig = new TalonFXConfiguration();
+    TalonFXConfiguration intakeLauncherConfig = new TalonFXConfiguration();
 
-    feederConfig.CurrentLimits.SupplyCurrentLimit = (FEEDER_MOTOR_CURRENT_LIMIT);
-    feederConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    feederConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    feederRoller.getConfigurator().apply(feederConfig);
+    intakeLauncherConfig.CurrentLimits.SupplyCurrentLimit = (FEEDER_MOTOR_CURRENT_LIMIT);
+    intakeLauncherConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    intakeLauncherConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    intakeLauncherRoller.getConfigurator().apply(intakeLauncherConfig);
 
     // create the configuration for the launcher roller, set a current limit, set
     // the motor to inverted so that positive values are used for both intaking and
     // launching, and apply the config to the controller
-    SparkMaxConfig launcherConfig = new SparkMaxConfig();
-    launcherConfig.inverted(true);
-    launcherConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
-    intakeLauncherRoller.configure(launcherConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    SparkMaxConfig feederConfig = new SparkMaxConfig();
+    feederConfig.inverted(true);
+    feederConfig.smartCurrentLimit(LAUNCHER_MOTOR_CURRENT_LIMIT);
+    feederRoller.configure(feederConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   // A method to set the rollers to values for intaking
@@ -82,6 +82,8 @@ public class CANFuelSubsystem extends SubsystemBase {
 
   // A method to stop the rollers
   public void stop() {
+    SmartDashboard.putString("Command", "Stop");
+
     feederRoller.set(0);
     intakeLauncherRoller.set(0);
   }
@@ -98,12 +100,14 @@ public class CANFuelSubsystem extends SubsystemBase {
   // A command factory to turn the spinUp method into a command that requires this
   // subsystem
   public Command spinUpCommand() {
+    SmartDashboard.putString("Command", "SpinUp");
     return this.run(() -> spinUp());
   }
 
   // A command factory to turn the launch method into a command that requires this
   // subsystem
   public Command launchCommand() {
+    SmartDashboard.putString("Command", "Launch");
     return this.run(() -> launch());
   }
 
