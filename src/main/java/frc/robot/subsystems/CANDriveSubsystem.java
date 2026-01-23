@@ -7,12 +7,14 @@ package frc.robot.subsystems;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -47,12 +49,13 @@ public class CANDriveSubsystem extends SubsystemBase {
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
     gyro = new WPI_PigeonIMU(PIGEON_ID);
+    
     odometry = new DifferentialDriveOdometry(
       Rotation2d.fromDegrees(gyro.getAngle()), 
       leftLeader.getEncoder().getPosition(), 
       rightLeader.getEncoder().getPosition(),
       new Pose2d(0.0,0.0,Rotation2d.fromDegrees(0.0)));
-
+    
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
 
@@ -107,5 +110,9 @@ public class CANDriveSubsystem extends SubsystemBase {
     SmartDashboard.putString("Command", "stop");
     return this.runOnce(
         () -> drive.arcadeDrive(0,0));
-   }
+  }
+  //public Command Pigeon2() {
+    //SmartDashboard.putString(null, null);
+    //    return this.run(null);
+ // }
 }
