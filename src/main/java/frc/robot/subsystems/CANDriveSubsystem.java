@@ -14,17 +14,26 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 
 import static edu.wpi.first.units.Units.Rotation;
 import static frc.robot.Constants.DriveConstants.*;
@@ -38,6 +47,7 @@ public class CANDriveSubsystem extends SubsystemBase {
   private final DifferentialDriveKinematics kinematics;
   private final DifferentialDriveOdometry odometry;
   WPI_PigeonIMU gyro;
+  private Field2d field = new Field2d();
 
   private final DifferentialDrive drive;
 
@@ -49,13 +59,14 @@ public class CANDriveSubsystem extends SubsystemBase {
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
     gyro = new WPI_PigeonIMU(PIGEON_ID);
-    
+    SmartDashboard.putData("field", field);
+
     odometry = new DifferentialDriveOdometry(
-      Rotation2d.fromDegrees(gyro.getAngle()), 
-      leftLeader.getEncoder().getPosition(), 
-      rightLeader.getEncoder().getPosition(),
-      new Pose2d(0.0,0.0,Rotation2d.fromDegrees(0.0)));
-    
+        Rotation2d.fromDegrees(gyro.getAngle()),
+        leftLeader.getEncoder().getPosition(),
+        rightLeader.getEncoder().getPosition(),
+        new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)));
+
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
 
@@ -92,12 +103,39 @@ public class CANDriveSubsystem extends SubsystemBase {
     config.inverted(true);
     leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
-  
+
   @Override
   public void periodic() {
-    odometry.update(Rotation2d.fromDegrees(gyro.getAngle()), 
-      leftLeader.getEncoder().getPosition(), 
-      rightLeader.getEncoder().getPosition());
+    Pose2d pose = odometry.update(Rotation2d.fromDegrees(gyro.getAngle()),
+        leftLeader.getEncoder().getPosition(),
+        rightLeader.getEncoder().getPosition());
+    field.setRobotPose(pose);
+  }
+
+  public void setPose (Pose2d newPose2d) {
+    odometry.resetPose(newPose2d);
+  }
+
+  public Pose2d getPose() {
+    return odometry.getPoseMeters();
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(
+        leftLeader.getEncoder().getVelocity(),
+        rightLeader.getEncoder().getVelocity());
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    leftLeader.setVoltage(leftVolts);
+    rightLeader.setVoltage(rightVolts);
+    drive.feed();
+  }
+
+  public Command resetOdometryCommand(Pose2d newPose2d) {
+    return this.runOnce(
+      () -> setPose(newPose2d)
+    );
   }
 
   // Command factory to create command to drive the robot with joystick inputs.
@@ -106,13 +144,37 @@ public class CANDriveSubsystem extends SubsystemBase {
     return this.run(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
   }
-   public Command stop() {
+
+  public Command stop() {
     SmartDashboard.putString("Command", "stop");
     return this.runOnce(
-        () -> drive.arcadeDrive(0,0));
+        () -> drive.arcadeDrive(0, 0));
   }
-  //public Command Pigeon2() {
-    //SmartDashboard.putString(null, null);
-    //    return this.run(null);
- // }
+
+  public Command followTrajectoryCommand(Trajectory trajectory){
+  return new RamseteCommand(
+      trajectory,
+      this::getPose,
+      new RamseteController(
+        Constants.DriveConstants.kRamseteB, 
+        Constants.DriveConstants.kRamseteZeta),  
+      new SimpleMotorFeedforward(
+        Constants.DriveConstants.ksVolts,
+        Constants.DriveConstants.kvVoltSecondsPerMeter,
+        Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
+      kinematics,
+      this::getWheelSpeeds,
+      new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
+      new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
+      this::tankDriveVolts,
+      this
+    );
+  }
+
+
+
+  // public Command Pigeon2() {
+  // SmartDashboard.putString(null, null);
+  // return this.run(null);
+  // }
 }

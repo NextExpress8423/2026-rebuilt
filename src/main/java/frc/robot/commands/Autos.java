@@ -4,9 +4,20 @@
 
 package frc.robot.commands;
 
+import java.util.List;
+
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.CANFuelSubsystem;
+import frc.robot.Constants;
 import frc.robot.subsystems.CANDriveSubsystem;
 
 public final class Autos {
@@ -26,5 +37,29 @@ public final class Autos {
         ballSubsystem.launchCommand().withTimeout(9),
         // Stop running the launcher
         ballSubsystem.runOnce(() -> ballSubsystem.stop()));
+  }
+
+  public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+    var autoVoltageConstaint = new DifferentialDriveVoltageConstraint(
+        new SimpleMotorFeedforward(
+            Constants.DriveConstants.ksVolts,
+            Constants.DriveConstants.kvVoltSecondsPerMeter,
+            Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
+        Constants.DriveConstants.kDriveKinematics,
+        10);
+    TrajectoryConfig config = new TrajectoryConfig(Constants.DriveConstants.kMaxSpeedMetersPerSecond,
+        Constants.DriveConstants.kMaxAccelerationMetersPerSecondSquared)
+        .setKinematics(Constants.DriveConstants.kDriveKinematics)
+        .addConstraint(autoVoltageConstaint);
+    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(0, 0, new Rotation2d(0)),
+        List.of(
+          new Translation2d(1, 1), 
+          new Translation2d(2, -1)),
+        new Pose2d(3, 0, new Rotation2d(0)),
+        config);
+    return driveSubsystem.resetOdometryCommand(exampleTrajectory.getInitialPose())
+        .andThen(driveSubsystem.followTrajectoryCommand(exampleTrajectory))
+        .andThen(driveSubsystem.stop());
   }
 }
