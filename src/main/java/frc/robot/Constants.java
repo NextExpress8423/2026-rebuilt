@@ -25,6 +25,8 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 6;
     public static final int RIGHT_FOLLOWER_ID = 2;
     public static final int PIGEON_ID = 7;
+    public static final double metersPerRotation = Units.inchesToMeters(6.0 * Math.PI / 8.45);
+    public static final double metersPerSecondConversion = metersPerRotation / 60.0;
 
 
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
@@ -53,10 +55,6 @@ public final class Constants {
         // Reasonable baseline values for a RAMSETE follower in units of meters and seconds
     public static final double kRamseteB = 2;
     public static final double kRamseteZeta = 0.7;
-
-    public static final double MetersPerRotation = Units.inchesToMeters(6.0 * Math.PI / 12.0);//caedmon was here :)
-
-    public static final double velocityConversionFactor = 0;
   }
 
   public static final class FuelConstants {

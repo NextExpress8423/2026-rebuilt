@@ -25,6 +25,10 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MutDistance;
+import edu.wpi.first.units.measure.MutLinearVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,10 +36,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotation;
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.DriveConstants.*;
 
 public class CANDriveSubsystem extends SubsystemBase {
@@ -50,6 +58,14 @@ public class CANDriveSubsystem extends SubsystemBase {
   private Field2d field = new Field2d();
 
   private final DifferentialDrive drive;
+
+  // Mutable holders for unit-safe SysId logging - persisted to avoid reallocation
+  // every loop
+  private final MutVoltage appliedVoltage = Volts.mutable(0);
+  private final MutDistance distance = Meters.mutable(0);
+  private final MutLinearVelocity velocity = MetersPerSecond.mutable(0);
+  // Creates a SysIdRoutine
+  SysIdRoutine routine;
 
   public CANDriveSubsystem() {
     // create brushed motors for drive
@@ -86,6 +102,8 @@ public class CANDriveSubsystem extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
     config.voltageCompensation(12);
     config.smartCurrentLimit(DRIVE_MOTOR_CURRENT_LIMIT);
+    config.encoder.positionConversionFactor(metersPerRotation);
+    config.encoder.velocityConversionFactor(metersPerSecondConversion);
 
     // Set configuration to follow each leader and then apply it to corresponding
     // follower. Resetting in case a new controller is swapped
@@ -102,6 +120,26 @@ public class CANDriveSubsystem extends SubsystemBase {
     // so that postive values drive both sides forward
     config.inverted(true);
     leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    routine = new SysIdRoutine(
+        new SysIdRoutine.Config(),
+        new SysIdRoutine.Mechanism(
+            voltage -> {
+              leftLeader.setVoltage(voltage);
+              rightLeader.setVoltage(voltage);
+            },
+            log -> {
+              log.motor("driveLeft")
+                  .voltage(
+                      appliedVoltage.mut_replace(leftLeader.getAppliedOutput() * leftLeader.getBusVoltage(), Volts))
+                  .linearPosition(distance.mut_replace(leftLeader.getEncoder().getPosition(), Meters))
+                  .linearVelocity(velocity.mut_replace(leftLeader.getEncoder().getVelocity(), MetersPerSecond));
+              log.motor("driveRight")
+                  .voltage(
+                      appliedVoltage.mut_replace(rightLeader.getAppliedOutput() * rightLeader.getBusVoltage(), Volts))
+                  .linearPosition(distance.mut_replace(rightLeader.getEncoder().getPosition(), Meters))
+                  .linearVelocity(velocity.mut_replace(rightLeader.getEncoder().getVelocity(), MetersPerSecond));
+            }, this));
   }
 
   @Override
@@ -112,7 +150,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     field.setRobotPose(pose);
   }
 
-  public void setPose (Pose2d newPose2d) {
+  public void setPose(Pose2d newPose2d) {
     odometry.resetPose(newPose2d);
   }
 
@@ -134,8 +172,7 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   public Command resetOdometryCommand(Pose2d newPose2d) {
     return this.runOnce(
-      () -> setPose(newPose2d)
-    );
+        () -> setPose(newPose2d));
   }
 
   // Command factory to create command to drive the robot with joystick inputs.
@@ -151,27 +188,32 @@ public class CANDriveSubsystem extends SubsystemBase {
         () -> drive.arcadeDrive(0, 0));
   }
 
-  public Command followTrajectoryCommand(Trajectory trajectory){
-  return new RamseteCommand(
-      trajectory,
-      this::getPose,
-      new RamseteController(
-        Constants.DriveConstants.kRamseteB, 
-        Constants.DriveConstants.kRamseteZeta),  
-      new SimpleMotorFeedforward(
-        Constants.DriveConstants.ksVolts,
-        Constants.DriveConstants.kvVoltSecondsPerMeter,
-        Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
-      kinematics,
-      this::getWheelSpeeds,
-      new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
-      new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
-      this::tankDriveVolts,
-      this
-    );
+  public Command followTrajectoryCommand(Trajectory trajectory) {
+    return new RamseteCommand(
+        trajectory,
+        this::getPose,
+        new RamseteController(
+            Constants.DriveConstants.kRamseteB,
+            Constants.DriveConstants.kRamseteZeta),
+        new SimpleMotorFeedforward(
+            Constants.DriveConstants.ksVolts,
+            Constants.DriveConstants.kvVoltSecondsPerMeter,
+            Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
+        kinematics,
+        this::getWheelSpeeds,
+        new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
+        new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
+        this::tankDriveVolts,
+        this);
   }
 
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return routine.quasistatic(direction);
+  }
 
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return routine.dynamic(direction);
+  }
 
   // public Command Pigeon2() {
   // SmartDashboard.putString(null, null);

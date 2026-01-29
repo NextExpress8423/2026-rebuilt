@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import static frc.robot.Constants.OperatorConstants.*;
 import static frc.robot.Constants.FuelConstants.*;
@@ -61,8 +62,7 @@ public class RobotContainer {
    * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void 
-  configureBindings() {
+  private void configureBindings() {
 
     // While the left bumper on operator controller is held, intake Fuel
     operatorController.leftBumper()
@@ -89,6 +89,22 @@ public class RobotContainer {
         driveSubsystem.driveArcade(
             () -> -driverController.getLeftY() * DRIVE_SCALING,
             () -> driverController.getRightX() * ROTATION_SCALING));
+
+    driverController.rightBumper()
+        .and(driverController.a())
+        .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+
+    driverController.rightBumper()
+        .and(driverController.b())
+        .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+
+    driverController.rightBumper()
+        .and(driverController.x())
+        .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+
+    driverController.rightBumper()
+        .and(driverController.y())
+        .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
   }
 
   /**
