@@ -75,10 +75,11 @@ public class CANDriveSubsystem extends SubsystemBase {
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
     gyro = new WPI_PigeonIMU(PIGEON_ID);
+    
     SmartDashboard.putData("field", field);
 
     odometry = new DifferentialDriveOdometry(
-        Rotation2d.fromDegrees(gyro.getAngle()),
+        Rotation2d.fromDegrees(-gyro.getAngle()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition(),
         new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)));
@@ -115,10 +116,12 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     // Remove following, then apply config to right leader
     config.disableFollowerMode();
+    config.inverted(true);
+
     rightLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     // Set config to inverted and then apply to left leader. Set Left side inverted
     // so that postive values drive both sides forward
-    config.inverted(true);
+    config.inverted(false);
     leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     routine = new SysIdRoutine(
@@ -144,10 +147,20 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Pose2d pose = odometry.update(Rotation2d.fromDegrees(gyro.getAngle()),
+    Pose2d pose = odometry.update(Rotation2d.fromDegrees(-gyro.getAngle()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition());
     field.setRobotPose(pose);
+
+    var wheelSpeeds = getWheelSpeeds();
+    SmartDashboard.putNumber("Left Wheel V", wheelSpeeds.leftMetersPerSecond);
+    SmartDashboard.putNumber("Right Wheel V", wheelSpeeds.rightMetersPerSecond);
+    SmartDashboard.putNumber("Left Wheel V Follow", leftFollower.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Right Wheel V Follow", rightFollower.getEncoder().getVelocity());
+    SmartDashboard.putNumber("Left Wheel P", leftLeader.getEncoder().getPosition());
+    SmartDashboard.putNumber("Right Wheel P", rightLeader.getEncoder().getPosition());
+    SmartDashboard.putNumber("Left Power", leftLeader.getAppliedOutput());
+    SmartDashboard.putNumber("Right Power", rightLeader.getAppliedOutput());
   }
 
   public void setPose(Pose2d newPose2d) {
@@ -177,13 +190,11 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   // Command factory to create command to drive the robot with joystick inputs.
   public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
-    SmartDashboard.putString("Command", "Drive");
     return this.run(
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
   }
 
   public Command stop() {
-    SmartDashboard.putString("Command", "stop");
     return this.runOnce(
         () -> drive.arcadeDrive(0, 0));
   }

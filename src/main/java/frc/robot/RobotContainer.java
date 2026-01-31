@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -48,7 +49,9 @@ public class RobotContainer {
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
+    autoChooser.addOption("trajectoryTest", Autos.TestTrobbio(driveSubsystem, ballSubsystem));
     autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
+    SmartDashboard.putData("Autos", autoChooser);
   }
 
   /**
@@ -88,7 +91,7 @@ public class RobotContainer {
     driveSubsystem.setDefaultCommand(
         driveSubsystem.driveArcade(
             () -> -driverController.getLeftY() * DRIVE_SCALING,
-            () -> driverController.getRightX() * ROTATION_SCALING));
+            () -> -driverController.getRightX() * ROTATION_SCALING));
 
     driverController.rightBumper()
         .and(driverController.a())
