@@ -25,7 +25,7 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 1;
     public static final int RIGHT_FOLLOWER_ID = 8;
     public static final int PIGEON_ID = 7;
-    public static final double metersPerRotation = Units.inchesToMeters(6.0 * Math.PI / 8.45);
+    public static final double metersPerRotation = 1.1238095*Units.inchesToMeters(6.0 * Math.PI / 8.45);
     public static final double metersPerSecondConversion = metersPerRotation / 60.0;
 
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
@@ -50,8 +50,8 @@ public final class Constants {
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(
         kTrackwidthMeters);
 
-    public static final double kMaxSpeedMetersPerSecond = 2;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 1;
+    public static final double kMaxSpeedMetersPerSecond = 0.5;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 0.25;
 
     // Reasonable baseline values for a RAMSETE follower in units of meters and
     // seconds
@@ -74,7 +74,7 @@ public final class Constants {
     public static final double INTAKING_FEEDER_VOLTAGE = -12;
     public static final double INTAKING_INTAKE_VOLTAGE = 10;
     public static final double LAUNCHING_FEEDER_VOLTAGE = 9;
-    public static final double LAUNCHING_LAUNCHER_VOLTAGE = 7.0;// 10.6;
+    public static final double LAUNCHING_LAUNCHER_VOLTAGE = 9.0;// 10.6;
     public static final double SPIN_UP_FEEDER_VOLTAGE = 0;
     public static final double SPIN_UP_SECONDS = 1;
   }

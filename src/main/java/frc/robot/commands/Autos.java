@@ -14,6 +14,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.CANFuelSubsystem;
@@ -39,7 +40,7 @@ public final class Autos {
         ballSubsystem.runOnce(() -> ballSubsystem.stop()));
   }
 
-  public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+  private static final TrajectoryConfig getConstraints() {
     var autoVoltageConstaint = new DifferentialDriveVoltageConstraint(
         new SimpleMotorFeedforward(
             Constants.DriveConstants.ksVolts,
@@ -47,20 +48,60 @@ public final class Autos {
             Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
         Constants.DriveConstants.kDriveKinematics,
         10);
-    TrajectoryConfig config = new TrajectoryConfig(Constants.DriveConstants.kMaxSpeedMetersPerSecond,
+    return new TrajectoryConfig(Constants.DriveConstants.kMaxSpeedMetersPerSecond,
         Constants.DriveConstants.kMaxAccelerationMetersPerSecondSquared)
         .setKinematics(Constants.DriveConstants.kDriveKinematics)
         .addConstraint(autoVoltageConstaint);
+  }
+
+  public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+    TrajectoryConfig config = getConstraints();
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(0, 0, new Rotation2d(0)),
         List.of(
-          //new Translation2d(1, 1), 
-          //new Translation2d(1.5, -1)
-          ),
+        // new Translation2d(1, 1),
+        // new Translation2d(1.5, -1)
+        ),
         new Pose2d(3, 3, new Rotation2d(90)),
         config);
     return driveSubsystem.resetOdometryCommand(exampleTrajectory.getInitialPose())
         .andThen(driveSubsystem.followTrajectoryCommand(exampleTrajectory))
         .andThen(driveSubsystem.stop());
   }
+
+  public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+    TrajectoryConfig config = getConstraints().setReversed(true);
+    Trajectory prepareToShootTrajectory = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(3.57, 4.0, new Rotation2d(0)),
+        List.of(),
+        new Pose2d(3.0, 4.0, new Rotation2d(0)),
+        config);
+    Trajectory prepareToClimbTrajectory = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(3.0, 4.0, new Rotation2d(0)),
+        List.of(),
+        new Pose2d(1.7, 3.2, new Rotation2d(0)),
+        config);
+    SmartDashboard.putString("Blue Hub Auto Starting Pose", prepareToShootTrajectory.getInitialPose().toString());
+    return driveSubsystem.resetOdometryCommand(prepareToShootTrajectory.getInitialPose())
+        .andThen(driveSubsystem.followTrajectoryCommand(prepareToShootTrajectory))
+        .andThen(ballSubsystem.spinUpCommand().withTimeout(1))
+        .andThen(ballSubsystem.launchCommand().withTimeout(9))
+        .andThen(ballSubsystem.runOnce(() -> ballSubsystem.stop()))
+        .andThen(driveSubsystem.followTrajectoryCommand(prepareToClimbTrajectory))
+        .andThen(driveSubsystem.stop());
+
+  }
+
+  public static final Command driveFowardFourMeters(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+    TrajectoryConfig config = getConstraints().setReversed(false);
+    Trajectory driveFourMetersTrajectory = TrajectoryGenerator.generateTrajectory(
+        new Pose2d(3, 2, Rotation2d.fromDegrees(90)),
+        List.of(),
+        new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
+        config);
+        return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
+        .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
+        .andThen(driveSubsystem.stop());
+  }
+
 }

@@ -50,6 +50,8 @@ public class RobotContainer {
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
     autoChooser.addOption("trajectoryTest", Autos.TestTrobbio(driveSubsystem, ballSubsystem));
+    autoChooser.addOption("Blue Hub Auto", Autos.blueHubAuto(driveSubsystem, ballSubsystem));
+    autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
     autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
     SmartDashboard.putData("Autos", autoChooser);
   }

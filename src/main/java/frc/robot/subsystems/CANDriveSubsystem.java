@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -103,6 +104,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
     config.voltageCompensation(12);
     config.smartCurrentLimit(DRIVE_MOTOR_CURRENT_LIMIT);
+    config.idleMode(IdleMode.kBrake);
     config.encoder.positionConversionFactor(metersPerRotation);
     config.encoder.velocityConversionFactor(metersPerSecondConversion);
 
@@ -164,6 +166,8 @@ public class CANDriveSubsystem extends SubsystemBase {
   }
 
   public void setPose(Pose2d newPose2d) {
+    System.out.println("Setting pose: " + newPose2d.toString());
+    SmartDashboard.putString("Last Pose Reset", newPose2d.toString());
     odometry.resetPose(newPose2d);
   }
 
