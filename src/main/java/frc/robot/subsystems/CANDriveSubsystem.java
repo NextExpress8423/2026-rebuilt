@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
@@ -198,28 +199,74 @@ public class CANDriveSubsystem extends SubsystemBase {
         () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
   }
 
+  public Command stopRepeatedly() {
+    return this.run(
+      () -> drive.arcadeDrive(0.0, 0.0)
+    );
+  }
+
   public Command stop() {
     return this.runOnce(
         () -> drive.arcadeDrive(0, 0));
   }
 
+  public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
+
+    return runEnd(
+      () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35), 
+      () -> drive.arcadeDrive(0.0, 0.0)
+    ).until(
+      () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0
+    );
+    // return new Command() {
+    //     public void initialize() {
+    //       drive.arcadeDrive(0.0, isCCW ? 0.1 : -0.1);
+    //     }
+    //     public void execute() {
+    //       drive.feed();
+    //     }
+    //     public void end(boolean interrupted) {
+    //       drive.arcadeDrive(0.0, 0.0);
+    //     }
+    //     public boolean isFinished() {
+    //       return Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0;
+    //     }
+    //   };
+  }
+
   public Command followTrajectoryCommand(Trajectory trajectory) {
-    return new RamseteCommand(
+    RamseteController controller = new RamseteController(
+            Constants.DriveConstants.kRamseteB,
+            Constants.DriveConstants.kRamseteZeta);
+    var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
+    var leftReference = table.getEntry("left_reference");
+    var leftMeasurement = table.getEntry("left_measurement");
+    var rightReference = table.getEntry("right_reference");
+    var rightMeasurement = table.getEntry("right_measurement");
+    controller.setEnabled(true);
+    PIDController leftController = new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0);
+    PIDController rightController = new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0);
+    return runOnce(() -> field.getObject("traj").setTrajectory(trajectory))
+      .andThen(new RamseteCommand(
         trajectory,
         this::getPose,
-        new RamseteController(
-            Constants.DriveConstants.kRamseteB,
-            Constants.DriveConstants.kRamseteZeta),
+        controller,
         new SimpleMotorFeedforward(
             Constants.DriveConstants.ksVolts,
             Constants.DriveConstants.kvVoltSecondsPerMeter,
             Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
         kinematics,
         this::getWheelSpeeds,
-        new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
-        new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0),
-        this::tankDriveVolts,
-        this);
+        leftController,
+        rightController,
+        (leftVolts, rightVolts) -> {
+          tankDriveVolts(leftVolts, rightVolts);
+          leftMeasurement.setNumber(getWheelSpeeds().leftMetersPerSecond);
+          rightMeasurement.setNumber(getWheelSpeeds().rightMetersPerSecond);
+          leftReference.setNumber(leftController.getSetpoint());
+          rightReference.setNumber(rightController.getSetpoint());
+        },
+        this));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

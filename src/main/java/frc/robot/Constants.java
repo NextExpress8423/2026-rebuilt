@@ -25,7 +25,7 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 1;
     public static final int RIGHT_FOLLOWER_ID = 8;
     public static final int PIGEON_ID = 7;
-    public static final double metersPerRotation = 1.1238095*Units.inchesToMeters(6.0 * Math.PI / 8.45);
+    public static final double metersPerRotation = 1.1238095 * Units.inchesToMeters(6.0 * Math.PI / 8.45);
     public static final double metersPerSecondConversion = metersPerRotation / 60.0;
 
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce
@@ -40,13 +40,13 @@ public final class Constants {
     // these
     // values for your robot.
     public static final double ksVolts = 0.30692;
-    public static final double kvVoltSecondsPerMeter = 2.2664;
-    public static final double kaVoltSecondsSquaredPerMeter = 0.30713;
+    public static final double kvVoltSecondsPerMeter = 1.1;//2.2664;
+    public static final double kaVoltSecondsSquaredPerMeter = 0.05;// 0.30713;
 
     // Example value only - as above, this must be tuned for your drive!
-    public static final double kPDriveVel = 0.054236;
+    public static final double kPDriveVel = 0.054236; //0.085; // 0.054236;
 
-    public static final double kTrackwidthMeters = 23 * 0.0254;
+    public static final double kTrackwidthMeters = 21.5 * 0.0254;
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(
         kTrackwidthMeters);
 
@@ -55,7 +55,7 @@ public final class Constants {
 
     // Reasonable baseline values for a RAMSETE follower in units of meters and
     // seconds
-    public static final double kRamseteB = 2;
+    public static final double kRamseteB = 2.2; // original 2.0;
     public static final double kRamseteZeta = 0.7;
   }
 
@@ -73,8 +73,8 @@ public final class Constants {
     // See the Software Guide for tuning information
     public static final double INTAKING_FEEDER_VOLTAGE = -12;
     public static final double INTAKING_INTAKE_VOLTAGE = 10;
-    public static final double LAUNCHING_FEEDER_VOLTAGE = 9;
-    public static final double LAUNCHING_LAUNCHER_VOLTAGE = 9.0;// 10.6;
+    public static final double LAUNCHING_FEEDER_VOLTAGE = 8;// 9;
+    public static final double LAUNCHING_LAUNCHER_VOLTAGE = 8.5;// 10.6;
     public static final double SPIN_UP_FEEDER_VOLTAGE = 0;
     public static final double SPIN_UP_SECONDS = 1;
   }

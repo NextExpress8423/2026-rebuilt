@@ -70,25 +70,34 @@ public final class Autos {
   }
 
   public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
-    TrajectoryConfig config = getConstraints().setReversed(true);
+    TrajectoryConfig config = getConstraints().setReversed(false);
+    TrajectoryConfig configReverse = getConstraints().setReversed(true);
+
     Trajectory prepareToShootTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(3.57, 4.0, new Rotation2d(0)),
         List.of(),
         new Pose2d(3.0, 4.0, new Rotation2d(0)),
-        config);
+        configReverse);
     Trajectory prepareToClimbTrajectory = TrajectoryGenerator.generateTrajectory(
-        new Pose2d(3.0, 4.0, new Rotation2d(0)),
+        new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
         List.of(),
-        new Pose2d(1.7, 3.2, new Rotation2d(0)),
+        new Pose2d(1.7, 3.2, Rotation2d.fromDegrees(-180.0)),
         config);
     SmartDashboard.putString("Blue Hub Auto Starting Pose", prepareToShootTrajectory.getInitialPose().toString());
     return driveSubsystem.resetOdometryCommand(prepareToShootTrajectory.getInitialPose())
         .andThen(driveSubsystem.followTrajectoryCommand(prepareToShootTrajectory))
-        .andThen(ballSubsystem.spinUpCommand().withTimeout(1))
-        .andThen(ballSubsystem.launchCommand().withTimeout(9))
-        .andThen(ballSubsystem.runOnce(() -> ballSubsystem.stop()))
+        //.andThen(ballSubsystem.spinUpCommand().withTimeout(1))
+        //.andThen(ballSubsystem.launchCommand().withTimeout(4))
+        //.andThen(ballSubsystem.runOnce(() -> ballSubsystem.stop()))
+        .andThen(driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false))
         .andThen(driveSubsystem.followTrajectoryCommand(prepareToClimbTrajectory))
         .andThen(driveSubsystem.stop());
+
+        // .andThen(driveSubsystem.stopRepeatedly().raceWith(
+        //   ballSubsystem.spinUpCommand().withTimeout(1)
+        //     .andThen(ballSubsystem.launchCommand().withTimeout(4))
+        //     .andThen(ballSubsystem.runOnce(() -> ballSubsystem.stop()))
+        //   ))
 
   }
 
@@ -99,7 +108,7 @@ public final class Autos {
         List.of(),
         new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
         config);
-        return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
+    return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
         .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
         .andThen(driveSubsystem.stop());
   }
