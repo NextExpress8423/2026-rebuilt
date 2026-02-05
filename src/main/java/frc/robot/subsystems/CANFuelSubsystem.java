@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.FuelConstants.*;
 
-public class CANFuelSubsystem extends SubsystemBase {
+public class CANFuelSubsystem extends SubsystemBase implements FuelSubsystem {
   private final SparkMax feederRoller;
   private final TalonFX intakeLauncherRoller;
 

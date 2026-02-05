@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -16,6 +18,10 @@ import static frc.robot.Constants.FuelConstants.*;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.CANDriveSubsystem;
 import frc.robot.subsystems.CANFuelSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FuelSubsystem;
+import frc.robot.subsystems.TestDriveSubsystem;
+import frc.robot.subsystems.TestFuelSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -26,8 +32,8 @@ import frc.robot.subsystems.CANFuelSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems
-  private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem();
-  private final CANFuelSubsystem ballSubsystem = new CANFuelSubsystem();
+  private final DriveSubsystem driveSubsystem;
+  private final FuelSubsystem ballSubsystem;
 
   // The driver's controller
   private final CommandXboxController driverController = new CommandXboxController(
@@ -44,6 +50,15 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+    if( Constants.is8424) {
+        driveSubsystem = new TestDriveSubsystem();
+        ballSubsystem = new TestFuelSubsystem();
+    } else {
+        driveSubsystem = new CANDriveSubsystem();
+        ballSubsystem = new CANFuelSubsystem();
+    }
+
+
     configureBindings();
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -54,6 +69,8 @@ public class RobotContainer {
     autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
     autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
     SmartDashboard.putData("Autos", autoChooser);
+
+    
   }
 
   /**
@@ -71,7 +88,7 @@ public class RobotContainer {
 
     // While the left bumper on operator controller is held, intake Fuel
     operatorController.leftBumper()
-        .whileTrue(ballSubsystem.runEnd(() -> ballSubsystem.intake(), () -> ballSubsystem.stop()));
+        .whileTrue(((SubsystemBase)ballSubsystem).runEnd(() -> ballSubsystem.intake(), () -> ballSubsystem.stop()));
     // While the right bumper on the operator controller is held, spin up for 1
     // second, then launch fuel. When the button is released, stop.
     operatorController.rightBumper()
@@ -81,7 +98,7 @@ public class RobotContainer {
     // While the A button is held on the operator controller, eject fuel back out
     // the intake
     operatorController.a()
-        .whileTrue(ballSubsystem.runEnd(() -> ballSubsystem.eject(), () -> ballSubsystem.stop()));
+        .whileTrue(((SubsystemBase)ballSubsystem).runEnd(() -> ballSubsystem.eject(), () -> ballSubsystem.stop()));
 
     // Set the default command for the drive subsystem to the command provided by
     // factory with the values provided by the joystick axes on the driver

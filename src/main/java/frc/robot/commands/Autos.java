@@ -17,13 +17,16 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstrai
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.CANFuelSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FuelSubsystem;
 import frc.robot.Constants;
 import frc.robot.subsystems.CANDriveSubsystem;
 
 public final class Autos {
   // Example autonomous command which drives forward for 1 second.
-  public static final Command exampleAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+  public static final Command exampleAuto(DriveSubsystem driveSubsystem, FuelSubsystem ballSubsystem) {
     return new SequentialCommandGroup(
         // Drive backwards for .25 seconds. The driveArcadeAuto command factory
         // creates a command which does not end which allows us to control
@@ -37,7 +40,7 @@ public final class Autos {
         ballSubsystem.spinUpCommand().withTimeout(1),
         ballSubsystem.launchCommand().withTimeout(9),
         // Stop running the launcher
-        ballSubsystem.runOnce(() -> ballSubsystem.stop()));
+        ((SubsystemBase)ballSubsystem).runOnce(() -> ballSubsystem.stop()));
   }
 
   private static final TrajectoryConfig getConstraints() {
@@ -54,7 +57,7 @@ public final class Autos {
         .addConstraint(autoVoltageConstaint);
   }
 
-  public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+  public static final Command TestTrobbio(DriveSubsystem driveSubsystem, FuelSubsystem ballSubsystem) {
     TrajectoryConfig config = getConstraints();
     Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(0, 0, new Rotation2d(0)),
@@ -69,7 +72,7 @@ public final class Autos {
         .andThen(driveSubsystem.stop());
   }
 
-  public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+  public static final Command blueHubAuto(DriveSubsystem driveSubsystem, FuelSubsystem ballSubsystem) {
     TrajectoryConfig config = getConstraints().setReversed(false);
     TrajectoryConfig configReverse = getConstraints().setReversed(true);
 
@@ -101,7 +104,7 @@ public final class Autos {
 
   }
 
-  public static final Command driveFowardFourMeters(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+  public static final Command driveFowardFourMeters(DriveSubsystem driveSubsystem, FuelSubsystem ballSubsystem) {
     TrajectoryConfig config = getConstraints().setReversed(false);
     Trajectory driveFourMetersTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(3, 2, Rotation2d.fromDegrees(90)),

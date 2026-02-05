@@ -48,18 +48,12 @@ import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.Constants.DriveConstants.*;
 
-public class CANDriveSubsystem extends SubsystemBase {
+public class CANDriveSubsystem extends DriveSubsystem {
 
-  private final SparkMax leftLeader;
-  private final SparkMax leftFollower;
-  private final SparkMax rightLeader;
-  private final SparkMax rightFollower;
   private final DifferentialDriveKinematics kinematics;
   private final DifferentialDriveOdometry odometry;
   WPI_PigeonIMU gyro;
   private Field2d field = new Field2d();
-
-  private final DifferentialDrive drive;
 
   // Mutable holders for unit-safe SysId logging - persisted to avoid reallocation
   // every loop
@@ -70,11 +64,6 @@ public class CANDriveSubsystem extends SubsystemBase {
   SysIdRoutine routine;
 
   public CANDriveSubsystem() {
-    // create brushed motors for drive
-    leftLeader = new SparkMax(LEFT_LEADER_ID, MotorType.kBrushless);
-    leftFollower = new SparkMax(LEFT_FOLLOWER_ID, MotorType.kBrushless);
-    rightLeader = new SparkMax(RIGHT_LEADER_ID, MotorType.kBrushless);
-    rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
     gyro = new WPI_PigeonIMU(PIGEON_ID);
     
@@ -85,47 +74,6 @@ public class CANDriveSubsystem extends SubsystemBase {
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition(),
         new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)));
-
-    // set up differential drive class
-    drive = new DifferentialDrive(leftLeader, rightLeader);
-
-    // Set can timeout. Because this project only sets parameters once on
-    // construction, the timeout can be long without blocking robot operation. Code
-    // which sets or gets parameters during operation may need a shorter timeout.
-    leftLeader.setCANTimeout(250);
-    rightLeader.setCANTimeout(250);
-    leftFollower.setCANTimeout(250);
-    rightFollower.setCANTimeout(250);
-
-    // Create the configuration to apply to motors. Voltage compensation
-    // helps the robot perform more similarly on different
-    // battery voltages (at the cost of a little bit of top speed on a fully charged
-    // battery). The current limit helps prevent tripping
-    // breakers.
-    SparkMaxConfig config = new SparkMaxConfig();
-    config.voltageCompensation(12);
-    config.smartCurrentLimit(DRIVE_MOTOR_CURRENT_LIMIT);
-    config.idleMode(IdleMode.kBrake);
-    config.encoder.positionConversionFactor(metersPerRotation);
-    config.encoder.velocityConversionFactor(metersPerSecondConversion);
-
-    // Set configuration to follow each leader and then apply it to corresponding
-    // follower. Resetting in case a new controller is swapped
-    // in and persisting in case of a controller reset due to breaker trip
-    config.follow(leftLeader);
-    leftFollower.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    config.follow(rightLeader);
-    rightFollower.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    // Remove following, then apply config to right leader
-    config.disableFollowerMode();
-    config.inverted(true);
-
-    rightLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // Set config to inverted and then apply to left leader. Set Left side inverted
-    // so that postive values drive both sides forward
-    config.inverted(false);
-    leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     routine = new SysIdRoutine(
         new SysIdRoutine.Config(),
@@ -188,15 +136,10 @@ public class CANDriveSubsystem extends SubsystemBase {
     drive.feed();
   }
 
+  @Override
   public Command resetOdometryCommand(Pose2d newPose2d) {
     return this.runOnce(
         () -> setPose(newPose2d));
-  }
-
-  // Command factory to create command to drive the robot with joystick inputs.
-  public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
-    return this.run(
-        () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
   }
 
   public Command stopRepeatedly() {
@@ -205,35 +148,31 @@ public class CANDriveSubsystem extends SubsystemBase {
     );
   }
 
-  public Command stop() {
-    return this.runOnce(
-        () -> drive.arcadeDrive(0, 0));
-  }
-
+  @Override
   public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
+        return runEnd(
+        () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35), 
+        () -> drive.arcadeDrive(0.0, 0.0)
+        ).until(
+        () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0
+        );
+        // return new Command() {
+        //     public void initialize() {
+        //       drive.arcadeDrive(0.0, isCCW ? 0.1 : -0.1);
+        //     }
+        //     public void execute() {
+        //       drive.feed();
+        //     }
+        //     public void end(boolean interrupted) {
+        //       drive.arcadeDrive(0.0, 0.0);
+        //     }
+        //     public boolean isFinished() {
+        //       return Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0;
+        //     }
+        //   };
+    }
 
-    return runEnd(
-      () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35), 
-      () -> drive.arcadeDrive(0.0, 0.0)
-    ).until(
-      () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0
-    );
-    // return new Command() {
-    //     public void initialize() {
-    //       drive.arcadeDrive(0.0, isCCW ? 0.1 : -0.1);
-    //     }
-    //     public void execute() {
-    //       drive.feed();
-    //     }
-    //     public void end(boolean interrupted) {
-    //       drive.arcadeDrive(0.0, 0.0);
-    //     }
-    //     public boolean isFinished() {
-    //       return Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0;
-    //     }
-    //   };
-  }
-
+  @Override
   public Command followTrajectoryCommand(Trajectory trajectory) {
     RamseteController controller = new RamseteController(
             Constants.DriveConstants.kRamseteB,
@@ -269,10 +208,12 @@ public class CANDriveSubsystem extends SubsystemBase {
         this));
   }
 
+  @Override
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
     return routine.quasistatic(direction);
   }
 
+  @Override
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return routine.dynamic(direction);
   }
