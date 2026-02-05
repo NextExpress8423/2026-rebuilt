@@ -18,15 +18,21 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.FuelConstants.*;
 
+import java.util.function.Supplier;
+
 public class CANFuelSubsystem extends SubsystemBase {
   private final SparkMax feederRoller;
   private final TalonFX intakeLauncherRoller;
 
+  private Supplier<Double> distanceToHubSupplier;
+
   /** Creates a new CANBallSubsystem. */
-  public CANFuelSubsystem() {
+  public CANFuelSubsystem(Supplier<Double> distanceToHubSupplier) {
     // create brushed motors for each of the motors on the launcher mechanism
     feederRoller = new SparkMax(FEEDER_MOTOR_ID, MotorType.kBrushless);
     intakeLauncherRoller = new TalonFX(INTAKE_LAUNCHER_MOTOR_ID);
+
+    this.distanceToHubSupplier = distanceToHubSupplier;
 
     // put default values for various fuel operations onto the dashboard
     // all methods in this subsystem pull their values from the dashbaord to allow

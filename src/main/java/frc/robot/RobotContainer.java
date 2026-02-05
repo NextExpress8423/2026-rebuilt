@@ -27,7 +27,7 @@ import frc.robot.subsystems.CANFuelSubsystem;
 public class RobotContainer {
   // The robot's subsystems
   private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem();
-  private final CANFuelSubsystem ballSubsystem = new CANFuelSubsystem();
+  private final CANFuelSubsystem ballSubsystem = new CANFuelSubsystem(driveSubsystem.getHubDistanceSupplier());
 
   // The driver's controller
   private final CommandXboxController driverController = new CommandXboxController(

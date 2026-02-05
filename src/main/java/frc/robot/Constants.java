@@ -25,7 +25,7 @@ public final class Constants {
     public static final int RIGHT_LEADER_ID = 1;
     public static final int RIGHT_FOLLOWER_ID = 8;
     public static final int PIGEON_ID = 7;
-    public static final double metersPerRotation = 1.1238095 * Units.inchesToMeters(6.0 * Math.PI / 8.45);
+    public static final double metersPerRotation = 1.03175 * Units.inchesToMeters(6.0 * Math.PI / 8.45);
     public static final double metersPerSecondConversion = metersPerRotation / 60.0;
 
     // Current limit for drivetrain motors. 60A is a reasonable maximum to reduce

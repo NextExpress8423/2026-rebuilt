@@ -81,7 +81,7 @@ public final class Autos {
     Trajectory prepareToClimbTrajectory = TrajectoryGenerator.generateTrajectory(
         new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
         List.of(),
-        new Pose2d(1.7, 3.2, Rotation2d.fromDegrees(-180.0)),
+        new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
         config);
     SmartDashboard.putString("Blue Hub Auto Starting Pose", prepareToShootTrajectory.getInitialPose().toString());
     return driveSubsystem.resetOdometryCommand(prepareToShootTrajectory.getInitialPose())

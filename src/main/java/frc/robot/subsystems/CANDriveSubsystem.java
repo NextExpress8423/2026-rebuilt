@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -18,6 +19,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +33,8 @@ import edu.wpi.first.units.measure.MutDistance;
 import edu.wpi.first.units.measure.MutLinearVelocity;
 import edu.wpi.first.units.measure.MutVoltage;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -41,6 +45,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.util.HubTargeting;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -55,11 +60,14 @@ public class CANDriveSubsystem extends SubsystemBase {
   private final SparkMax rightLeader;
   private final SparkMax rightFollower;
   private final DifferentialDriveKinematics kinematics;
-  private final DifferentialDriveOdometry odometry;
+  // private final DifferentialDriveOdometry odometry;
+  private final DifferentialDrivePoseEstimator odometry;
   WPI_PigeonIMU gyro;
   private Field2d field = new Field2d();
 
   private final DifferentialDrive drive;
+
+  private HubTargeting hubTargeting;
 
   // Mutable holders for unit-safe SysId logging - persisted to avoid reallocation
   // every loop
@@ -77,10 +85,11 @@ public class CANDriveSubsystem extends SubsystemBase {
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
     gyro = new WPI_PigeonIMU(PIGEON_ID);
-    
+
     SmartDashboard.putData("field", field);
 
-    odometry = new DifferentialDriveOdometry(
+    odometry = new DifferentialDrivePoseEstimator(
+        kinematics,
         Rotation2d.fromDegrees(-gyro.getAngle()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition(),
@@ -88,6 +97,9 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
+    var alliance = DriverStation.getAlliance();
+
+    hubTargeting = new HubTargeting(alliance.orElse(Alliance.Blue), this::getPose);
 
     // Set can timeout. Because this project only sets parameters once on
     // construction, the timeout can be long without blocking robot operation. Code
@@ -173,7 +185,11 @@ public class CANDriveSubsystem extends SubsystemBase {
   }
 
   public Pose2d getPose() {
-    return odometry.getPoseMeters();
+    return odometry.getEstimatedPosition();
+  }
+
+  public Supplier<Double> getHubDistanceSupplier() {
+    return hubTargeting::getDistanceToHub;
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
@@ -201,8 +217,7 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   public Command stopRepeatedly() {
     return this.run(
-      () -> drive.arcadeDrive(0.0, 0.0)
-    );
+        () -> drive.arcadeDrive(0.0, 0.0));
   }
 
   public Command stop() {
@@ -213,31 +228,30 @@ public class CANDriveSubsystem extends SubsystemBase {
   public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
 
     return runEnd(
-      () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35), 
-      () -> drive.arcadeDrive(0.0, 0.0)
-    ).until(
-      () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0
-    );
+        () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35),
+        () -> drive.arcadeDrive(0.0, 0.0)).until(
+            () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0);
     // return new Command() {
-    //     public void initialize() {
-    //       drive.arcadeDrive(0.0, isCCW ? 0.1 : -0.1);
-    //     }
-    //     public void execute() {
-    //       drive.feed();
-    //     }
-    //     public void end(boolean interrupted) {
-    //       drive.arcadeDrive(0.0, 0.0);
-    //     }
-    //     public boolean isFinished() {
-    //       return Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0;
-    //     }
-    //   };
+    // public void initialize() {
+    // drive.arcadeDrive(0.0, isCCW ? 0.1 : -0.1);
+    // }
+    // public void execute() {
+    // drive.feed();
+    // }
+    // public void end(boolean interrupted) {
+    // drive.arcadeDrive(0.0, 0.0);
+    // }
+    // public boolean isFinished() {
+    // return Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees())
+    // < 5.0;
+    // }
+    // };
   }
 
   public Command followTrajectoryCommand(Trajectory trajectory) {
     RamseteController controller = new RamseteController(
-            Constants.DriveConstants.kRamseteB,
-            Constants.DriveConstants.kRamseteZeta);
+        Constants.DriveConstants.kRamseteB,
+        Constants.DriveConstants.kRamseteZeta);
     var table = NetworkTableInstance.getDefault().getTable("troubleshooting");
     var leftReference = table.getEntry("left_reference");
     var leftMeasurement = table.getEntry("left_measurement");
@@ -247,26 +261,26 @@ public class CANDriveSubsystem extends SubsystemBase {
     PIDController leftController = new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0);
     PIDController rightController = new PIDController(Constants.DriveConstants.kPDriveVel, 0, 0);
     return runOnce(() -> field.getObject("traj").setTrajectory(trajectory))
-      .andThen(new RamseteCommand(
-        trajectory,
-        this::getPose,
-        controller,
-        new SimpleMotorFeedforward(
-            Constants.DriveConstants.ksVolts,
-            Constants.DriveConstants.kvVoltSecondsPerMeter,
-            Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
-        kinematics,
-        this::getWheelSpeeds,
-        leftController,
-        rightController,
-        (leftVolts, rightVolts) -> {
-          tankDriveVolts(leftVolts, rightVolts);
-          leftMeasurement.setNumber(getWheelSpeeds().leftMetersPerSecond);
-          rightMeasurement.setNumber(getWheelSpeeds().rightMetersPerSecond);
-          leftReference.setNumber(leftController.getSetpoint());
-          rightReference.setNumber(rightController.getSetpoint());
-        },
-        this));
+        .andThen(new RamseteCommand(
+            trajectory,
+            this::getPose,
+            controller,
+            new SimpleMotorFeedforward(
+                Constants.DriveConstants.ksVolts,
+                Constants.DriveConstants.kvVoltSecondsPerMeter,
+                Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
+            kinematics,
+            this::getWheelSpeeds,
+            leftController,
+            rightController,
+            (leftVolts, rightVolts) -> {
+              tankDriveVolts(leftVolts, rightVolts);
+              leftMeasurement.setNumber(getWheelSpeeds().leftMetersPerSecond);
+              rightMeasurement.setNumber(getWheelSpeeds().rightMetersPerSecond);
+              leftReference.setNumber(leftController.getSetpoint());
+              rightReference.setNumber(rightController.getSetpoint());
+            },
+            this));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
