@@ -16,6 +16,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -212,7 +213,7 @@ public class CANDriveSubsystem extends SubsystemBase {
   // Command factory to create command to drive the robot with joystick inputs.
   public Command driveArcade(DoubleSupplier xSpeed, DoubleSupplier zRotation) {
     return this.run(
-        () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble()));
+        () -> drive.arcadeDrive(xSpeed.getAsDouble(), zRotation.getAsDouble(), true));
   }
 
   public Command stopRepeatedly() {
@@ -225,8 +226,28 @@ public class CANDriveSubsystem extends SubsystemBase {
         () -> drive.arcadeDrive(0, 0));
   }
 
-  public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
+  public Command turnToHubCommand() {
+    return runEnd(
+            () -> {
+              Rotation2d angleToHubRotation2d = hubTargeting.getAngleToHub();
+              double errorDegrees = angleToHubRotation2d.minus(getPose().getRotation()).getDegrees();
+              boolean isCCW = errorDegrees > 0.0;
 
+              SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
+              SmartDashboard.putNumber("errorDegrees", errorDegrees);
+
+              if (Math.abs(errorDegrees) > 5.0) {
+                double turnSpeed = MathUtil.clamp(errorDegrees * 0.035, -0.5, 0.5);
+                drive.arcadeDrive(0.0, turnSpeed);
+              } else {
+                drive.arcadeDrive(0.0, 0.0);
+              }
+            },
+            () -> drive.arcadeDrive(0.0, 0.0)
+        );
+  }
+
+  public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
     return runEnd(
         () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35),
         () -> drive.arcadeDrive(0.0, 0.0)).until(

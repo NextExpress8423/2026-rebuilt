@@ -95,6 +95,9 @@ public class RobotContainer {
             () -> -driverController.getLeftY() * DRIVE_SCALING,
             () -> -driverController.getRightX() * ROTATION_SCALING));
 
+    driverController.a()
+      .whileTrue(driveSubsystem.turnToHubCommand());
+
     driverController.rightBumper()
         .and(driverController.a())
         .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));

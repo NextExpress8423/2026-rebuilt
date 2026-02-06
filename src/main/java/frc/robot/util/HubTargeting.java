@@ -7,9 +7,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class HubTargeting {
-    private static final Translation2d BLUE_HUB_POSE = new Translation2d(4.0, 4.0);
+    private static final Translation2d BLUE_HUB_POSE = new Translation2d(4.57, 4.0);
     private static final Translation2d RED_HUB_POSE = new Translation2d(12.0, 4.0);
 
     private Supplier<Pose2d> poseSupplier;
@@ -25,7 +26,14 @@ public class HubTargeting {
     }
 
     public Rotation2d getAngleToHub() {
-        return hubPose.minus(poseSupplier.get().getTranslation()).getAngle();
+        Pose2d robotPose = poseSupplier.get();
+        Translation2d diff = hubPose.minus(robotPose.getTranslation());
+        SmartDashboard.putString("HubPose", hubPose.toString());
+        SmartDashboard.putString("TargetingBotPose", robotPose.toString());
+        SmartDashboard.putString("TargetingDiff", diff.toString());
+        SmartDashboard.putNumber("TargetingAngle", diff.getAngle().getDegrees());
+
+        return diff.getAngle();
     }
 
     public double getDistanceToHub() {
