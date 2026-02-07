@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class HubTargeting {
-    private static final Translation2d BLUE_HUB_POSE = new Translation2d(4.57, 4.0);
-    private static final Translation2d RED_HUB_POSE = new Translation2d(12.0, 4.0);
+    private static final Translation2d BLUE_HUB_POSE = new Translation2d(4.66, 4.0);
+    private static final Translation2d RED_HUB_POSE = new Translation2d(11.95, 4.0);
 
     private Supplier<Pose2d> poseSupplier;
     private Translation2d hubPose;

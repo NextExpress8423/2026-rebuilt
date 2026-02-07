@@ -25,6 +25,13 @@ import frc.robot.subsystems.CANFuelSubsystem;
  * commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+
+    public enum HangPosition {
+        NO_HANG,
+        HANG_LEFT,
+        HANG_RIGHT
+    }
+
   // The robot's subsystems
   private final CANDriveSubsystem driveSubsystem = new CANDriveSubsystem();
   private final CANFuelSubsystem ballSubsystem = new CANFuelSubsystem(driveSubsystem.getHubDistanceSupplier());
@@ -39,6 +46,7 @@ public class RobotContainer {
 
   // The autonomous chooser
   private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  private final SendableChooser<HangPosition> autoHangSelection = new SendableChooser<>();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -49,11 +57,19 @@ public class RobotContainer {
     // Set the options to show up in the Dashboard for selecting auto modes. If you
     // add additional auto modes you can add additional lines here with
     // autoChooser.addOption
+
+    autoHangSelection.setDefaultOption(HangPosition.NO_HANG.toString(), HangPosition.NO_HANG);
+    autoHangSelection.addOption(HangPosition.HANG_LEFT.toString(), HangPosition.HANG_LEFT);
+    autoHangSelection.addOption(HangPosition.HANG_RIGHT.toString(), HangPosition.HANG_RIGHT);
+    SmartDashboard.putData("AutoHangPosition", autoHangSelection);
+    Autos.hangPositionChooser = autoHangSelection;
+
     autoChooser.addOption("trajectoryTest", Autos.TestTrobbio(driveSubsystem, ballSubsystem));
     autoChooser.addOption("Blue Hub Auto", Autos.blueHubAuto(driveSubsystem, ballSubsystem));
     autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
     autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
     SmartDashboard.putData("Autos", autoChooser);
+
   }
 
   /**

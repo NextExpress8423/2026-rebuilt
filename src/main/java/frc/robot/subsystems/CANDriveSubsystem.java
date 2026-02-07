@@ -177,6 +177,8 @@ public class CANDriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Right Wheel P", rightLeader.getEncoder().getPosition());
     SmartDashboard.putNumber("Left Power", leftLeader.getAppliedOutput());
     SmartDashboard.putNumber("Right Power", rightLeader.getAppliedOutput());
+
+    SmartDashboard.putNumber("Distance To Hub", hubTargeting.getDistanceToHub());
   }
 
   public void setPose(Pose2d newPose2d) {
@@ -231,13 +233,13 @@ public class CANDriveSubsystem extends SubsystemBase {
             () -> {
               Rotation2d angleToHubRotation2d = hubTargeting.getAngleToHub();
               double errorDegrees = angleToHubRotation2d.minus(getPose().getRotation()).getDegrees();
-              boolean isCCW = errorDegrees > 0.0;
-
               SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
               SmartDashboard.putNumber("errorDegrees", errorDegrees);
 
-              if (Math.abs(errorDegrees) > 5.0) {
-                double turnSpeed = MathUtil.clamp(errorDegrees * 0.035, -0.5, 0.5);
+              if (Math.abs(errorDegrees) > 2) {
+                double turnSpeed = MathUtil.clamp(
+                  Math.signum(errorDegrees) * Math.max(Math.abs(errorDegrees * 0.008), 0.26), 
+                  -0.6, 0.6);
                 drive.arcadeDrive(0.0, turnSpeed);
               } else {
                 drive.arcadeDrive(0.0, 0.0);
