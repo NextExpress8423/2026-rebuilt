@@ -58,7 +58,8 @@ public class RobotContainer {
         ballSubsystem = new CANFuelSubsystem();
     }
 
-
+    SmartDashboard.putNumber("Drive Speed", DRIVE_SCALING);
+    SmartDashboard.putNumber("Turn Speed", ROTATION_SCALING); 
     configureBindings();
 
     // Set the options to show up in the Dashboard for selecting auto modes. If you
@@ -109,8 +110,14 @@ public class RobotContainer {
     // are also scaled down so the rotation is more easily controllable.
     driveSubsystem.setDefaultCommand(
         driveSubsystem.driveArcade(
-            () -> -driverController.getLeftY() * DRIVE_SCALING,
-            () -> -driverController.getRightX() * ROTATION_SCALING));
+            () -> {
+                var scale = SmartDashboard.getNumber("Drive Speed", DRIVE_SCALING);
+                return -driverController.getLeftY() * scale;
+            },
+            () -> {
+                var scale = SmartDashboard.getNumber("Turn Speed", ROTATION_SCALING);
+                return -driverController.getRightX() * scale;
+            }));
 
     driverController.rightBumper()
         .and(driverController.a())

@@ -22,10 +22,11 @@ public final class Constants {
 
   public static final class DriveConstants {
     // Motor controller IDs for drivetrain motors
-    public static final int LEFT_LEADER_ID = 6;
-    public static final int LEFT_FOLLOWER_ID = 2;
-    public static final int RIGHT_LEADER_ID = 1;
-    public static final int RIGHT_FOLLOWER_ID = 8;
+    public static final int LEFT_LEADER_ID = 19;//6
+    public static final int LEFT_FOLLOWER_ID = 18;//2
+    public static final int RIGHT_LEADER_ID = 10;//1
+
+    public static final int RIGHT_FOLLOWER_ID = 12;//8
     public static final int PIGEON_ID = 7;
     public static final double metersPerRotation = 1.1238095 * Units.inchesToMeters(6.0 * Math.PI / 8.45);
     public static final double metersPerSecondConversion = metersPerRotation / 60.0;
@@ -89,7 +90,7 @@ public final class Constants {
 
     // This value is multiplied by the joystick value when driving the robot to
     // help avoid driving and turning too fast and being difficult to control
-    public static final double DRIVE_SCALING = .5;
-    public static final double ROTATION_SCALING = .4;
+    public static final double DRIVE_SCALING = 1;
+    public static final double ROTATION_SCALING = 1;
   }
 }
