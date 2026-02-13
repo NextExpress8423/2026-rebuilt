@@ -9,11 +9,14 @@ import java.util.List;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +33,18 @@ public final class Autos {
         @SuppressWarnings("unchecked")
         private static HangPosition getHangPosition() {
                 return hangPositionChooser.getSelected();
+        }
+
+        private static Transform2d getAllianceTransform() {
+                var alliance = DriverStation.getAlliance();
+                if (alliance.get() == Alliance.Blue) {
+                        return new Transform2d();
+                } else {
+                        return new Transform2d(
+                                        new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+                                        new Pose2d(8.07, 16.54, Rotation2d.fromDegrees(180)));
+                }
+
         }
 
         // Example autonomous command which drives forward for 1 second.
@@ -79,8 +94,10 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+        public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
                 HangPosition hangPosition = getHangPosition();
+                Transform2d allianceTransform = getAllianceTransform();
+
                 SmartDashboard.putString("Chosen Auto Hang Position", hangPosition.toString());
 
                 TrajectoryConfig config = getConstraints().setReversed(false);
@@ -90,33 +107,33 @@ public final class Autos {
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
                                 List.of(),
                                 new Pose2d(3.0, 4.0, new Rotation2d(0)),
-                                configReverse);
+                                configReverse).transformBy(allianceTransform);
                 Trajectory backToHubTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, new Rotation2d(0)),
                                 List.of(),
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
-                                config);
+                                config).transformBy(allianceTransform);
                 Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
-                                config);
+                                config).transformBy(allianceTransform);
                 Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(160.0)),
                                 List.of(),
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
-                                config);
+                                config).transformBy(allianceTransform);
 
-                SmartDashboard.putString("Blue Hub Auto Starting Pose",
-                                prepareToShootTrajectory.getInitialPose().toString());
 
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_LEFT,
-                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160), true)
+                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160)
+                                                                .plus(allianceTransform.getRotation()), true)
                                                                 .andThen(driveSubsystem.followTrajectoryCommand(
                                                                                 prepareToClimbLeftTrajectory)))
                                 .withOption(HangPosition.HANG_RIGHT,
-                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false)
+                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110)
+                                                                .plus(allianceTransform.getRotation()), false)
                                                                 .andThen(driveSubsystem.followTrajectoryCommand(
                                                                                 prepareToClimbRightTrajectory)))
                                 .withOption(HangPosition.NO_HANG,
@@ -129,26 +146,27 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command blueRightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+        public static final Command rightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
                 // placeholder
                 TrajectoryConfig config = getConstraints().setReversed(true);
+                Transform2d allianceTransform = getAllianceTransform();
                 Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3.73, 1.23, Rotation2d.fromDegrees(44.6)),
+                                new Pose2d(3.73, 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
-                                config);
+                                config).transformBy(allianceTransform);
 
                 Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
                                 List.of(),
                                 new Pose2d(1.25, 0.48, Rotation2d.fromDegrees(45)),
-                                config);
+                                config).transformBy(allianceTransform);
 
                 Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
-                                getConstraints());
+                                getConstraints()).transformBy(allianceTransform);
 
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_RIGHT,
@@ -159,7 +177,48 @@ public final class Autos {
 
                 return driveSubsystem.resetOdometryCommand(leaveTrenchTrajectory.getInitialPose())
                                 .andThen(driveSubsystem.followTrajectoryCommand(leaveTrenchTrajectory))
-                                .andThen(driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(44.6), true))
+                                .andThen(driveSubsystem.rotateToCommand(
+                                                Rotation2d.fromDegrees(44.6).plus(allianceTransform.getRotation()),
+                                                true))
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(doHangRoutine)
+                                .andThen(driveSubsystem.stop());
+        }
+
+        public static final Command leftTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+                // placeholder
+                TrajectoryConfig config = getConstraints().setReversed(true);
+                Transform2d allianceTransform = getAllianceTransform();
+                Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.73, 8 - 1.23, Rotation2d.fromDegrees(0)),
+                                List.of(),
+                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                config).transformBy(allianceTransform);
+
+                Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                List.of(),
+                                new Pose2d(1.25, 8 - 0.48, Rotation2d.fromDegrees(-45)),
+                                config).transformBy(allianceTransform);
+
+                Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                List.of(),
+                                new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(-180.0)),
+                                getConstraints()).transformBy(allianceTransform);
+
+                Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
+                                .withOption(HangPosition.HANG_LEFT,
+                                                // driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false)
+                                                driveSubsystem.followTrajectoryCommand(backToHangTrajectory))
+                                .withOption(HangPosition.NO_HANG,
+                                                driveSubsystem.followTrajectoryCommand(moveOutOfTheWayTrajectory));
+
+                return driveSubsystem.resetOdometryCommand(leaveTrenchTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(leaveTrenchTrajectory))
+                                .andThen(driveSubsystem.rotateToCommand(
+                                                Rotation2d.fromDegrees(-44.6).plus(allianceTransform.getRotation()),
+                                                false))
                                 .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(doHangRoutine)
                                 .andThen(driveSubsystem.stop());

@@ -64,8 +64,9 @@ public class RobotContainer {
     SmartDashboard.putData("AutoHangPosition", autoHangSelection);
     Autos.hangPositionChooser = autoHangSelection;
 
-    autoChooser.addOption("Blue Hub Auto", Autos.blueHubAuto(driveSubsystem, ballSubsystem));
-    autoChooser.addOption("Blue Right Trench Auto", Autos.blueRightTrench(driveSubsystem, ballSubsystem));
+    autoChooser.addOption("Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem));
+    autoChooser.addOption("Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem));
+    autoChooser.addOption("Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem));
     autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
     autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
     SmartDashboard.putData("Autos", autoChooser);
