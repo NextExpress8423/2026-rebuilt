@@ -80,11 +80,11 @@ public class CANFuelSubsystem extends SubsystemBase {
     // y=488.69779x+3166.64619
     // y=-16.61362x^{3}+97.94771x^{2}+408.01527x+3088.93403
 
-    //return 477.69779 * distanceToHub + 3174.64619;
-    return -16.61362 * Math.pow(distanceToHub, 3)+
-    97.94771 * Math.pow(distanceToHub, 2)+
-    408.01527 * distanceToHub + 
-    3050.00;  // 3088.93403;
+    // return 477.69779 * distanceToHub + 3174.64619;
+    return (-16.61362 * Math.pow(distanceToHub, 3) +
+        97.94771 * Math.pow(distanceToHub, 2) +
+        408.01527 * distanceToHub +
+        3050.00) * 2; // 3088.93403;
   }
 
   public void setLaunchSpeed() {
@@ -125,7 +125,6 @@ public class CANFuelSubsystem extends SubsystemBase {
     intakeLauncherRoller.set(0);
   }
 
-
   // A method to spin up the launcher roller while spinning the feeder roller to
   // push Fuel away from the launcher
   public void spinUp() {
@@ -147,6 +146,12 @@ public class CANFuelSubsystem extends SubsystemBase {
   public Command launchCommand() {
     SmartDashboard.putString("Command", "Launch");
     return this.run(() -> launch());
+  }
+
+  public Command autoShootRoutineCommand() {
+    return spinUpCommand().withTimeout(1)
+        .andThen(launchCommand().withTimeout(4))
+        .andThen(runOnce(() -> stop()));
   }
 
   @Override

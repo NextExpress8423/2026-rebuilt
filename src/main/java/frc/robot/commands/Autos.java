@@ -25,123 +25,157 @@ import frc.robot.subsystems.CANDriveSubsystem;
 
 public final class Autos {
 
-    public static SendableChooser<HangPosition> hangPositionChooser = null;
+        public static SendableChooser<HangPosition> hangPositionChooser = null;
 
-    @SuppressWarnings("unchecked")
-    private static HangPosition getHangPosition() {
-        return hangPositionChooser.getSelected();
-    }
+        @SuppressWarnings("unchecked")
+        private static HangPosition getHangPosition() {
+                return hangPositionChooser.getSelected();
+        }
 
-    // Example autonomous command which drives forward for 1 second.
-    public static final Command exampleAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
-        return new SequentialCommandGroup(
-                // Drive backwards for .25 seconds. The driveArcadeAuto command factory
-                // creates a command which does not end which allows us to control
-                // the timing using the withTimeout decorator
-                driveSubsystem.driveArcade(() -> -0.5, () -> 0).withTimeout(.25),
-                // Stop driving. This line uses the regular driveArcade command factory so it
-                // ends immediately after commanding the motors to stop
-                driveSubsystem.stop(),
-                // Spin up the launcher for 1 second and then launch balls for 9 seconds, for a
-                // total of 10 seconds
-                ballSubsystem.spinUpCommand().withTimeout(1),
-                ballSubsystem.launchCommand().withTimeout(9),
-                // Stop running the launcher
-                ballSubsystem.runOnce(() -> ballSubsystem.stop()));
-    }
+        // Example autonomous command which drives forward for 1 second.
+        public static final Command exampleAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+                return new SequentialCommandGroup(
+                                // Drive backwards for .25 seconds. The driveArcadeAuto command factory
+                                // creates a command which does not end which allows us to control
+                                // the timing using the withTimeout decorator
+                                driveSubsystem.driveArcade(() -> -0.5, () -> 0).withTimeout(.25),
+                                // Stop driving. This line uses the regular driveArcade command factory so it
+                                // ends immediately after commanding the motors to stop
+                                driveSubsystem.stop(),
+                                // Spin up the launcher for 1 second and then launch balls for 9 seconds, for a
+                                // total of 10 seconds
+                                ballSubsystem.spinUpCommand().withTimeout(1),
+                                ballSubsystem.launchCommand().withTimeout(9),
+                                // Stop running the launcher
+                                ballSubsystem.runOnce(() -> ballSubsystem.stop()));
+        }
 
-    private static final TrajectoryConfig getConstraints() {
-        var autoVoltageConstaint = new DifferentialDriveVoltageConstraint(
-                new SimpleMotorFeedforward(
-                        Constants.DriveConstants.ksVolts,
-                        Constants.DriveConstants.kvVoltSecondsPerMeter,
-                        Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
-                Constants.DriveConstants.kDriveKinematics,
-                10);
-        return new TrajectoryConfig(Constants.DriveConstants.kMaxSpeedMetersPerSecond,
-                Constants.DriveConstants.kMaxAccelerationMetersPerSecondSquared)
-                .setKinematics(Constants.DriveConstants.kDriveKinematics)
-                .addConstraint(autoVoltageConstaint);
-    }
+        private static final TrajectoryConfig getConstraints() {
+                var autoVoltageConstaint = new DifferentialDriveVoltageConstraint(
+                                new SimpleMotorFeedforward(
+                                                Constants.DriveConstants.ksVolts,
+                                                Constants.DriveConstants.kvVoltSecondsPerMeter,
+                                                Constants.DriveConstants.kaVoltSecondsSquaredPerMeter),
+                                Constants.DriveConstants.kDriveKinematics,
+                                10);
+                return new TrajectoryConfig(Constants.DriveConstants.kMaxSpeedMetersPerSecond,
+                                Constants.DriveConstants.kMaxAccelerationMetersPerSecondSquared)
+                                .setKinematics(Constants.DriveConstants.kDriveKinematics)
+                                .addConstraint(autoVoltageConstaint);
+        }
 
-    public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
-        TrajectoryConfig config = getConstraints();
-        Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(0, 0, new Rotation2d(0)),
-                List.of(
-                // new Translation2d(1, 1),
-                // new Translation2d(1.5, -1)
-                ),
-                new Pose2d(3, 3, new Rotation2d(90)),
-                config);
-        return driveSubsystem.resetOdometryCommand(exampleTrajectory.getInitialPose())
-                .andThen(driveSubsystem.followTrajectoryCommand(exampleTrajectory))
-                .andThen(driveSubsystem.stop());
-    }
+        public static final Command TestTrobbio(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+                TrajectoryConfig config = getConstraints();
+                Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(0, 0, new Rotation2d(0)),
+                                List.of(
+                                // new Translation2d(1, 1),
+                                // new Translation2d(1.5, -1)
+                                ),
+                                new Pose2d(3, 3, new Rotation2d(90)),
+                                config);
+                return driveSubsystem.resetOdometryCommand(exampleTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(exampleTrajectory))
+                                .andThen(driveSubsystem.stop());
+        }
 
-    public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
-        HangPosition hangPosition = getHangPosition();
-        SmartDashboard.putString("Chosen Auto Hang Position", hangPosition.toString());
+        public static final Command blueHubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+                HangPosition hangPosition = getHangPosition();
+                SmartDashboard.putString("Chosen Auto Hang Position", hangPosition.toString());
 
-        TrajectoryConfig config = getConstraints().setReversed(false);
-        TrajectoryConfig configReverse = getConstraints().setReversed(true);
+                TrajectoryConfig config = getConstraints().setReversed(false);
+                TrajectoryConfig configReverse = getConstraints().setReversed(true);
 
-        Trajectory prepareToShootTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(3.57, 4.0, new Rotation2d(0)),
-                List.of(),
-                new Pose2d(3.0, 4.0, new Rotation2d(0)),
-                configReverse);
-        Trajectory backToHubTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(3.0, 4.0, new Rotation2d(0)),
-                List.of(),
-                new Pose2d(3.57, 4.0, new Rotation2d(0)),
-                config);
-        Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
-                List.of(),
-                new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
-                config);
-        Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(160.0)),
-                List.of(),
-                new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
-                config);
+                Trajectory prepareToShootTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.57, 4.0, new Rotation2d(0)),
+                                List.of(),
+                                new Pose2d(3.0, 4.0, new Rotation2d(0)),
+                                configReverse);
+                Trajectory backToHubTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.0, 4.0, new Rotation2d(0)),
+                                List.of(),
+                                new Pose2d(3.57, 4.0, new Rotation2d(0)),
+                                config);
+                Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
+                                List.of(),
+                                new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
+                                config);
+                Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(160.0)),
+                                List.of(),
+                                new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
+                                config);
 
-        SmartDashboard.putString("Blue Hub Auto Starting Pose", prepareToShootTrajectory.getInitialPose().toString());
+                SmartDashboard.putString("Blue Hub Auto Starting Pose",
+                                prepareToShootTrajectory.getInitialPose().toString());
 
-        Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
-            .withOption(HangPosition.HANG_LEFT, 
-                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160), true)
-                    .andThen(driveSubsystem.followTrajectoryCommand(prepareToClimbLeftTrajectory))
-            )
-            .withOption(HangPosition.HANG_RIGHT, 
-                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false)
-                    .andThen(driveSubsystem.followTrajectoryCommand(prepareToClimbRightTrajectory))
-            )
-            .withOption(HangPosition.NO_HANG,
-                driveSubsystem.followTrajectoryCommand(backToHubTrajectory)
-            );
+                Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
+                                .withOption(HangPosition.HANG_LEFT,
+                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160), true)
+                                                                .andThen(driveSubsystem.followTrajectoryCommand(
+                                                                                prepareToClimbLeftTrajectory)))
+                                .withOption(HangPosition.HANG_RIGHT,
+                                                driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false)
+                                                                .andThen(driveSubsystem.followTrajectoryCommand(
+                                                                                prepareToClimbRightTrajectory)))
+                                .withOption(HangPosition.NO_HANG,
+                                                driveSubsystem.followTrajectoryCommand(backToHubTrajectory));
 
-        return driveSubsystem.resetOdometryCommand(prepareToShootTrajectory.getInitialPose())
-                .andThen(driveSubsystem.followTrajectoryCommand(prepareToShootTrajectory))
-                .andThen(ballSubsystem.spinUpCommand().withTimeout(1))
-                .andThen(ballSubsystem.launchCommand().withTimeout(4))
-                .andThen(ballSubsystem.runOnce(() -> ballSubsystem.stop()))
-                .andThen(doHangRoutine)
-                .andThen(driveSubsystem.stop());
-    }
+                return driveSubsystem.resetOdometryCommand(prepareToShootTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(prepareToShootTrajectory))
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(doHangRoutine)
+                                .andThen(driveSubsystem.stop());
+        }
 
-    public static final Command driveFowardFourMeters(CANDriveSubsystem driveSubsystem,
-            CANFuelSubsystem ballSubsystem) {
-        TrajectoryConfig config = getConstraints().setReversed(false);
-        Trajectory driveFourMetersTrajectory = TrajectoryGenerator.generateTrajectory(
-                new Pose2d(3, 2, Rotation2d.fromDegrees(90)),
-                List.of(),
-                new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
-                config);
-        return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
-                .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
-                .andThen(driveSubsystem.stop());
-    }
+        public static final Command blueRightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+                // placeholder
+                TrajectoryConfig config = getConstraints().setReversed(true);
+                Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.73, 1.23, Rotation2d.fromDegrees(44.6)),
+                                List.of(),
+                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                config);
+
+                Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                List.of(),
+                                new Pose2d(1.25, 0.48, Rotation2d.fromDegrees(45)),
+                                config);
+
+                Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                List.of(),
+                                new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
+                                getConstraints());
+
+                Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
+                                .withOption(HangPosition.HANG_RIGHT,
+                                                // driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110), false)
+                                                driveSubsystem.followTrajectoryCommand(backToHangTrajectory))
+                                .withOption(HangPosition.NO_HANG,
+                                                driveSubsystem.followTrajectoryCommand(moveOutOfTheWayTrajectory));
+
+                return driveSubsystem.resetOdometryCommand(leaveTrenchTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(leaveTrenchTrajectory))
+                                .andThen(driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(44.6), true))
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(doHangRoutine)
+                                .andThen(driveSubsystem.stop());
+        }
+
+        public static final Command driveFowardFourMeters(CANDriveSubsystem driveSubsystem,
+                        CANFuelSubsystem ballSubsystem) {
+                TrajectoryConfig config = getConstraints().setReversed(false);
+                Trajectory driveFourMetersTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3, 2, Rotation2d.fromDegrees(90)),
+                                List.of(),
+                                new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
+                                config);
+                return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
+                                .andThen(driveSubsystem.stop());
+        }
 
 }
