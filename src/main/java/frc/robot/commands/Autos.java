@@ -42,9 +42,19 @@ public final class Autos {
                 } else {
                         return new Transform2d(
                                         new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
-                                        new Pose2d(8.07, 16.54, Rotation2d.fromDegrees(180)));
+                                        new Pose2d(16.54, 8.07, Rotation2d.fromDegrees(180)));
                 }
 
+        }
+
+        private static Pose2d getAllianceOrigin() {
+                var alliance = DriverStation.getAlliance();
+                if (alliance.get() == Alliance.Blue) {
+                        return new Pose2d();
+                } else {
+                        return new Pose2d(16.54, 8.07, Rotation2d.fromDegrees(180));
+
+                }
         }
 
         // Example autonomous command which drives forward for 1 second.
@@ -97,6 +107,7 @@ public final class Autos {
         public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
                 HangPosition hangPosition = getHangPosition();
                 Transform2d allianceTransform = getAllianceTransform();
+                Pose2d allianceOrigin = getAllianceOrigin();
 
                 SmartDashboard.putString("Chosen Auto Hang Position", hangPosition.toString());
 
@@ -107,33 +118,33 @@ public final class Autos {
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
                                 List.of(),
                                 new Pose2d(3.0, 4.0, new Rotation2d(0)),
-                                configReverse).transformBy(allianceTransform);
+                                configReverse).relativeTo(allianceOrigin);
                 Trajectory backToHubTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, new Rotation2d(0)),
                                 List.of(),
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceOrigin);
                 Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceOrigin);
                 Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(160.0)),
                                 List.of(),
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceOrigin);
 
 
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_LEFT,
                                                 driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160)
-                                                                .plus(allianceTransform.getRotation()), true)
+                                                                .plus(allianceOrigin.getRotation()), true)
                                                                 .andThen(driveSubsystem.followTrajectoryCommand(
                                                                                 prepareToClimbLeftTrajectory)))
                                 .withOption(HangPosition.HANG_RIGHT,
                                                 driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(-110)
-                                                                .plus(allianceTransform.getRotation()), false)
+                                                                .plus(allianceOrigin.getRotation()), false)
                                                                 .andThen(driveSubsystem.followTrajectoryCommand(
                                                                                 prepareToClimbRightTrajectory)))
                                 .withOption(HangPosition.NO_HANG,
