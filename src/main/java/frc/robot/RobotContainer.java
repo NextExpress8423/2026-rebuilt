@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -114,6 +116,10 @@ public class RobotContainer {
 
     driverController.a()
       .whileTrue(driveSubsystem.turnToHubCommand());
+
+      //resets infront of the hub, same starting spot for our hub autos.
+    driverController.b()
+        .onTrue(driveSubsystem.resetOdometryCommand(new Pose2d(3.57, 4.0, new Rotation2d(0))));
 
     driverController.rightBumper()
         .and(driverController.a())

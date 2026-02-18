@@ -121,7 +121,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     config.idleMode(IdleMode.kBrake);
     config.encoder.positionConversionFactor(metersPerRotation);
     config.encoder.velocityConversionFactor(metersPerSecondConversion);
-
+    
     // Set configuration to follow each leader and then apply it to corresponding
     // follower. Resetting in case a new controller is swapped
     // in and persisting in case of a controller reset due to breaker trip
