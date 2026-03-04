@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import java.lang.annotation.Retention;
+import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -17,12 +19,14 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
@@ -42,10 +46,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.util.HubTargeting;
 
 import static edu.wpi.first.units.Units.Meters;
@@ -69,6 +76,8 @@ public class CANDriveSubsystem extends SubsystemBase {
   private final DifferentialDrive drive;
 
   private HubTargeting hubTargeting;
+
+  private Pose2d resetPose;
 
   // Mutable holders for unit-safe SysId logging - persisted to avoid reallocation
   // every loop
@@ -102,6 +111,12 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     hubTargeting = new HubTargeting(alliance.orElse(Alliance.Blue), this::getPose);
 
+    if (alliance.orElse(Alliance.Blue) == Alliance.Blue) {
+      resetPose = new Pose2d(3.57, 4.0, new Rotation2d(0));
+    } else {
+      resetPose = new Pose2d(12.97, 4.0, new Rotation2d(180));
+    }
+
     // Set can timeout. Because this project only sets parameters once on
     // construction, the timeout can be long without blocking robot operation. Code
     // which sets or gets parameters during operation may need a shorter timeout.
@@ -121,7 +136,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     config.idleMode(IdleMode.kBrake);
     config.encoder.positionConversionFactor(metersPerRotation);
     config.encoder.velocityConversionFactor(metersPerSecondConversion);
-    
+
     // Set configuration to follow each leader and then apply it to corresponding
     // follower. Resetting in case a new controller is swapped
     // in and persisting in case of a controller reset due to breaker trip
@@ -166,6 +181,19 @@ public class CANDriveSubsystem extends SubsystemBase {
     Pose2d pose = odometry.update(Rotation2d.fromDegrees(-gyro.getAngle()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition());
+    LimelightHelpers.SetRobotOrientation("limelight", odometry.getEstimatedPosition().getRotation().getDegrees(), 0, 0,
+        0, 0, 0);
+
+    PoseEstimate robotPoseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    Pose3d targetPose3d = LimelightHelpers.getTargetPose3d_RobotSpace("limelight");
+    double distance = targetPose3d.getTranslation().getNorm();
+      if (robotPoseEstimate != null) {
+        if (robotPoseEstimate.tagCount > 0 && Math.abs(gyro.getRate()) < 45) {
+          odometry.setVisionMeasurementStdDevs(VecBuilder.fill(distance * 0.75, distance * 0.75, 999999999));
+          odometry.addVisionMeasurement(robotPoseEstimate.pose, robotPoseEstimate.timestampSeconds);
+          pose = odometry.getEstimatedPosition();
+        }        
+      }
     field.setRobotPose(pose);
 
     var wheelSpeeds = getWheelSpeeds();
@@ -207,9 +235,19 @@ public class CANDriveSubsystem extends SubsystemBase {
     drive.feed();
   }
 
+  public Command shakeThingsUpCommand() {
+    return new SequentialCommandGroup(
+        driveArcade(() -> 0.7, () -> 0).withTimeout(0.3),
+        driveArcade(() -> -0.7, () -> 0).withTimeout(0.3)).repeatedly();
+  }
+
   public Command resetOdometryCommand(Pose2d newPose2d) {
     return this.runOnce(
         () -> setPose(newPose2d));
+  }
+
+  public Command manualPoseResetCommand() {
+    return this.resetOdometryCommand(resetPose);
   }
 
   // Command factory to create command to drive the robot with joystick inputs.
@@ -230,23 +268,22 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   public Command turnToHubCommand() {
     return runEnd(
-            () -> {
-              Rotation2d angleToHubRotation2d = hubTargeting.getAngleToHub();
-              double errorDegrees = angleToHubRotation2d.minus(getPose().getRotation()).getDegrees();
-              SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
-              SmartDashboard.putNumber("errorDegrees", errorDegrees);
+        () -> {
+          Rotation2d angleToHubRotation2d = hubTargeting.getAngleToHub();
+          double errorDegrees = angleToHubRotation2d.minus(getPose().getRotation()).getDegrees();
+          SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
+          SmartDashboard.putNumber("errorDegrees", errorDegrees);
 
-              if (Math.abs(errorDegrees) > 2) {
-                double turnSpeed = MathUtil.clamp(
-                  Math.signum(errorDegrees) * Math.max(Math.abs(errorDegrees * 0.008), 0.26), 
-                  -0.6, 0.6);
-                drive.arcadeDrive(0.0, turnSpeed);
-              } else {
-                drive.arcadeDrive(0.0, 0.0);
-              }
-            },
-            () -> drive.arcadeDrive(0.0, 0.0)
-        );
+          if (Math.abs(errorDegrees) > 2) {
+            double turnSpeed = MathUtil.clamp(
+                Math.signum(errorDegrees) * Math.max(Math.abs(errorDegrees * 0.008), 0.26),
+                -0.6, 0.6);
+            drive.arcadeDrive(0.0, turnSpeed);
+          } else {
+            drive.arcadeDrive(0.0, 0.0);
+          }
+        },
+        () -> drive.arcadeDrive(0.0, 0.0));
   }
 
   public Command rotateToCommand(Rotation2d heading, boolean isCCW) {

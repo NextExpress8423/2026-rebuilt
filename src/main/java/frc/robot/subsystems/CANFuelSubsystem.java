@@ -79,12 +79,12 @@ public class CANFuelSubsystem extends SubsystemBase {
   private double calculateRPM(double distanceToHub) {
     // y=488.69779x+3166.64619
     // y=-16.61362x^{3}+97.94771x^{2}+408.01527x+3088.93403
-
+    // y=69.68989x^{3}-190.18269x^{2}+327.0665x+3585.34004
     // return 477.69779 * distanceToHub + 3174.64619;
-    return (-16.61362 * Math.pow(distanceToHub, 3) +
-        97.94771 * Math.pow(distanceToHub, 2) +
-        408.01527 * distanceToHub +
-        3050.00) * 2; // 3088.93403;
+    return (69.68989 * Math.pow(distanceToHub, 3) -
+        190.18269 * Math.pow(distanceToHub, 2) +
+        327.0665 * distanceToHub +
+        3585.34004); // 3088.93403;
   }
 
   public void setLaunchSpeed() {
