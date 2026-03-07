@@ -70,7 +70,9 @@ public class CANDriveSubsystem extends SubsystemBase {
   private final DifferentialDriveKinematics kinematics;
   // private final DifferentialDriveOdometry odometry;
   private final DifferentialDrivePoseEstimator odometry;
-  WPI_PigeonIMU gyro;
+  Pigeon2 gyro;
+
+ // WPI_PigeonIMU gyro;
   private Field2d field = new Field2d();
 
   private final DifferentialDrive drive;
@@ -94,13 +96,13 @@ public class CANDriveSubsystem extends SubsystemBase {
     rightLeader = new SparkMax(RIGHT_LEADER_ID, MotorType.kBrushless);
     rightFollower = new SparkMax(RIGHT_FOLLOWER_ID, MotorType.kBrushless);
     kinematics = kDriveKinematics;
-    gyro = new WPI_PigeonIMU(PIGEON_ID);
+    gyro = new Pigeon2(PIGEON_ID);
 
     SmartDashboard.putData("field", field);
 
     odometry = new DifferentialDrivePoseEstimator(
         kinematics,
-        Rotation2d.fromDegrees(-gyro.getAngle()),
+        Rotation2d.fromDegrees(-gyro.getYaw().getValueAsDouble()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition(),
         new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)));
@@ -178,7 +180,7 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Pose2d pose = odometry.update(Rotation2d.fromDegrees(-gyro.getAngle()),
+    Pose2d pose = odometry.update(Rotation2d.fromDegrees(-gyro.getYaw().getValueAsDouble()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition());
     LimelightHelpers.SetRobotOrientation("limelight", odometry.getEstimatedPosition().getRotation().getDegrees(), 0, 0,
@@ -188,7 +190,7 @@ public class CANDriveSubsystem extends SubsystemBase {
     Pose3d targetPose3d = LimelightHelpers.getTargetPose3d_RobotSpace("limelight");
     double distance = targetPose3d.getTranslation().getNorm();
       if (robotPoseEstimate != null) {
-        if (robotPoseEstimate.tagCount > 0 && Math.abs(gyro.getRate()) < 45) {
+        if (robotPoseEstimate.tagCount > 0 && Math.abs(gyro.getAngularVelocityZDevice().getValueAsDouble()) < 45) {
           odometry.setVisionMeasurementStdDevs(VecBuilder.fill(distance * 0.75, distance * 0.75, 999999999));
           odometry.addVisionMeasurement(robotPoseEstimate.pose, robotPoseEstimate.timestampSeconds);
           pose = odometry.getEstimatedPosition();

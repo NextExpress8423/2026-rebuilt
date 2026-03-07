@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -119,6 +120,9 @@ public class RobotContainer {
 
         driverController.a()
                 .whileTrue(driveSubsystem.turnToHubCommand());
+
+        driverController.pov(0).whileTrue(Commands.run(() -> ballSubsystem.climb(1))).whileFalse(Commands.run(() -> ballSubsystem.climb(0)));
+        driverController.pov(180).whileTrue(Commands.run(() -> ballSubsystem.climb(-1))).whileFalse(Commands.run(() -> ballSubsystem.climb(0)));
 
         // resets infront of the hub, same starting spot for our hub autos.
         driverController.b()

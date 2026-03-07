@@ -28,6 +28,9 @@ public class CANFuelSubsystem extends SubsystemBase {
   private final SparkMax feederRoller;
   private final TalonFX intakeLauncherRoller;
 
+  // change to whatever it should be, and move its own subsystem :/
+  private final SparkMax climberMotor = new SparkMax(21, MotorType.kBrushless);
+
   private final VelocityVoltage launcherVelocityRequest;
 
   private Supplier<Double> distanceToHubSupplier;
@@ -85,6 +88,10 @@ public class CANFuelSubsystem extends SubsystemBase {
         190.18269 * Math.pow(distanceToHub, 2) +
         327.0665 * distanceToHub +
         3585.34004); // 3088.93403;
+  }
+
+  public void climb(double speed) {
+    climberMotor.set(speed);
   }
 
   public void setLaunchSpeed() {
