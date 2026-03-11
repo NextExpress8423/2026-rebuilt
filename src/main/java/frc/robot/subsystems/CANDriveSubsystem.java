@@ -102,7 +102,7 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     odometry = new DifferentialDrivePoseEstimator(
         kinematics,
-        Rotation2d.fromDegrees(-gyro.getYaw().getValueAsDouble()),
+        Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition(),
         new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0)));
@@ -180,7 +180,7 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Pose2d pose = odometry.update(Rotation2d.fromDegrees(-gyro.getYaw().getValueAsDouble()),
+    Pose2d pose = odometry.update(Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition());
     LimelightHelpers.SetRobotOrientation("limelight", odometry.getEstimatedPosition().getRotation().getDegrees(), 0, 0,
