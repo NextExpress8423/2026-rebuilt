@@ -62,10 +62,10 @@ public class CANFuelSubsystem extends SubsystemBase {
     intakeLauncherConfig.CurrentLimits.SupplyCurrentLimit = (FEEDER_MOTOR_CURRENT_LIMIT);
     intakeLauncherConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     intakeLauncherConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    intakeLauncherConfig.Slot0.kS = 0.18;
-    intakeLauncherConfig.Slot0.kV = 0.1125;
+    intakeLauncherConfig.Slot0.kS = 0.48;
+    intakeLauncherConfig.Slot0.kV = 0.1165;
     intakeLauncherConfig.Slot0.kA = 0.0;
-    intakeLauncherConfig.Slot0.kP = 0.5;
+    intakeLauncherConfig.Slot0.kP = 0.6;
     intakeLauncherConfig.Slot0.kI = 0.0;
     intakeLauncherConfig.Slot0.kD = 0.0;
     intakeLauncherRoller.getConfigurator().apply(intakeLauncherConfig);
@@ -84,10 +84,13 @@ public class CANFuelSubsystem extends SubsystemBase {
     // y=-16.61362x^{3}+97.94771x^{2}+408.01527x+3088.93403
     // y=69.68989x^{3}-190.18269x^{2}+327.0665x+3585.34004
     // return 477.69779 * distanceToHub + 3174.64619;
-    return (69.68989 * Math.pow(distanceToHub, 3) -
-        190.18269 * Math.pow(distanceToHub, 2) +
-        327.0665 * distanceToHub +
-        3585.34004); // 3088.93403;
+    //69.68989 * Math.pow(distanceToHub, 3) -
+    //    190.18269 * Math.pow(distanceToHub, 2) +
+     //   327.0665 * distanceToHub +
+     //   3585.34004
+    //return (1400 * distanceToHub + 1166.66667); // 3088.93403;
+    SmartDashboard.putString("It deployed", "asdf");
+    return (1430 * distanceToHub + 1180);
   }
 
   public void climb(double speed) {
@@ -107,6 +110,7 @@ public class CANFuelSubsystem extends SubsystemBase {
     var rpm = SmartDashboard.getNumber("launcher RPM", 50.0 * 60.0);
     if (rpm <= 0) {
       rpm = calculateRPM(distanceToHubSupplier.get());
+      SmartDashboard.putNumber("Target RPM", rpm);
     }
     intakeLauncherRoller.setControl(launcherVelocityRequest.withVelocity(rpm / 60.0));
   }
@@ -166,7 +170,7 @@ public class CANFuelSubsystem extends SubsystemBase {
 
   public Command autoShootRoutineCommand() {
     return spinUpCommand().withTimeout(1)
-        .andThen(launchCommand().withTimeout(4))
+        .andThen(launchCommand().withTimeout(10))
         .andThen(runOnce(() -> stop()));
   }
 

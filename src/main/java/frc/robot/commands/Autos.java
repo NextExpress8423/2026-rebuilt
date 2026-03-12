@@ -117,20 +117,20 @@ public final class Autos {
                 Trajectory prepareToShootTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
                                 List.of(),
-                                new Pose2d(3.0, 4.0, new Rotation2d(0)),
+                                new Pose2d(2.5, 4.0, new Rotation2d(0)),
                                 configReverse).relativeTo(allianceOrigin);
                 Trajectory backToHubTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3.0, 4.0, new Rotation2d(0)),
+                                new Pose2d(2.5, 4.0, new Rotation2d(0)),
                                 List.of(),
                                 new Pose2d(3.57, 4.0, new Rotation2d(0)),
                                 config).relativeTo(allianceOrigin);
                 Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(-110.0)),
+                                new Pose2d(2.5, 4.0, Rotation2d.fromDegrees(-110.0)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
                                 config).relativeTo(allianceOrigin);
                 Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(160.0)),
+                                new Pose2d(2.5, 4.0, Rotation2d.fromDegrees(160.0)),
                                 List.of(),
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
                                 config).relativeTo(allianceOrigin);
@@ -164,17 +164,17 @@ public final class Autos {
                 Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.73, 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
                                 config).transformBy(allianceTransform);
 
                 Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(1.25, 0.48, Rotation2d.fromDegrees(45)),
+                                new Pose2d(1.1, 0.6, Rotation2d.fromDegrees(60)),
                                 config).transformBy(allianceTransform);
 
                 Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(2, 1.23, Rotation2d.fromDegrees(44.6)),
+                                new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
                                 getConstraints()).transformBy(allianceTransform);
@@ -189,7 +189,7 @@ public final class Autos {
                 return driveSubsystem.resetOdometryCommand(leaveTrenchTrajectory.getInitialPose())
                                 .andThen(driveSubsystem.followTrajectoryCommand(leaveTrenchTrajectory))
                                 .andThen(driveSubsystem.rotateToCommand(
-                                                Rotation2d.fromDegrees(44.6).plus(allianceTransform.getRotation()),
+                                                Rotation2d.fromDegrees(60).plus(allianceTransform.getRotation()),
                                                 true))
                                 .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(doHangRoutine)
@@ -203,17 +203,17 @@ public final class Autos {
                 Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.73, 8 - 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(0)),
                                 config).transformBy(allianceTransform);
 
                 Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(-60)),
                                 List.of(),
                                 new Pose2d(1.25, 8 - 0.48, Rotation2d.fromDegrees(-45)),
                                 config).transformBy(allianceTransform);
 
                 Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(2, 8 - 1.23, Rotation2d.fromDegrees(-44.6)),
+                                new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(-60)),
                                 List.of(),
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(-180.0)),
                                 getConstraints()).transformBy(allianceTransform);
@@ -228,7 +228,7 @@ public final class Autos {
                 return driveSubsystem.resetOdometryCommand(leaveTrenchTrajectory.getInitialPose())
                                 .andThen(driveSubsystem.followTrajectoryCommand(leaveTrenchTrajectory))
                                 .andThen(driveSubsystem.rotateToCommand(
-                                                Rotation2d.fromDegrees(-44.6).plus(allianceTransform.getRotation()),
+                                                Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
                                                 false))
                                 .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(doHangRoutine)
