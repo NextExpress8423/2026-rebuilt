@@ -105,6 +105,10 @@ public class CANFuelSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Climber Posistion", posistion);
   }
 
+  public void climberReset() {
+    climberMotor.set(-0.3);
+  }
+
 
   public void setLaunchSpeed() {
     var rpm = SmartDashboard.getNumber("launcher RPM", 50.0 * 60.0);

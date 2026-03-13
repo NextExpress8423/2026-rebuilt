@@ -1,11 +1,13 @@
 
 package frc.robot.util;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -14,20 +16,28 @@ public class HubTargeting {
     private static final Translation2d RED_HUB_POSE = new Translation2d(11.95, 4.0);
 
     private Supplier<Pose2d> poseSupplier;
-    private Translation2d hubPose;
+    private Translation2d hubPose = null;
 
-    public HubTargeting(Alliance alliance, Supplier<Pose2d> poseSupplier) {
+    public HubTargeting(Supplier<Pose2d> poseSupplier) {
         this.poseSupplier = poseSupplier;
-        if (alliance == Alliance.Blue) {
-            hubPose = BLUE_HUB_POSE;
-        } else {
-            hubPose = RED_HUB_POSE;
+    }
+
+    public Translation2d getHubPose() {
+        if (hubPose == null) {
+            DriverStation.getAlliance().ifPresent(alliance -> {
+                if (alliance == Alliance.Blue) {
+                    hubPose = BLUE_HUB_POSE;
+                } else {
+                    hubPose = RED_HUB_POSE;
+                }
+            });
         }
+        return hubPose != null ? hubPose : BLUE_HUB_POSE;
     }
 
     public Rotation2d getAngleToHub() {
         Pose2d robotPose = poseSupplier.get();
-        Translation2d diff = hubPose.minus(robotPose.getTranslation());
+        Translation2d diff = getHubPose().minus(robotPose.getTranslation());
         SmartDashboard.putString("HubPose", hubPose.toString());
         SmartDashboard.putString("TargetingBotPose", robotPose.toString());
         SmartDashboard.putString("TargetingDiff", diff.toString());
@@ -37,7 +47,7 @@ public class HubTargeting {
     }
 
     public double getDistanceToHub() {
-        return hubPose.minus(poseSupplier.get().getTranslation()).getNorm();
+        return getHubPose().minus(poseSupplier.get().getTranslation()).getNorm();
     }
 
 }

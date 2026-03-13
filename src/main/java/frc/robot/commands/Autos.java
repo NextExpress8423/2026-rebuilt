@@ -35,9 +35,8 @@ public final class Autos {
                 return hangPositionChooser.getSelected();
         }
 
-        private static Transform2d getAllianceTransform() {
-                var alliance = DriverStation.getAlliance();
-                if (alliance.get() == Alliance.Blue) {
+        private static Transform2d getAllianceTransform(Alliance alliance) {
+                if (alliance == Alliance.Blue) {
                         return new Transform2d();
                 } else {
                         return new Transform2d(
@@ -47,9 +46,8 @@ public final class Autos {
 
         }
 
-        private static Pose2d getAllianceOrigin() {
-                var alliance = DriverStation.getAlliance();
-                if (alliance.get() == Alliance.Blue) {
+        private static Pose2d getAllianceOrigin(Alliance alliance) {
+                if (alliance == Alliance.Blue) {
                         return new Pose2d();
                 } else {
                         return new Pose2d(16.54, 8.07, Rotation2d.fromDegrees(180));
@@ -104,10 +102,9 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+        public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
                 HangPosition hangPosition = getHangPosition();
-                Transform2d allianceTransform = getAllianceTransform();
-                Pose2d allianceOrigin = getAllianceOrigin();
+                Pose2d allianceOrigin = getAllianceOrigin(alliance);
 
                 SmartDashboard.putString("Chosen Auto Hang Position", hangPosition.toString());
 
@@ -157,27 +154,27 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command rightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+        public static final Command rightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
                 // placeholder
                 TrajectoryConfig config = getConstraints().setReversed(true);
-                Transform2d allianceTransform = getAllianceTransform();
+                Pose2d allianceTransform = getAllianceOrigin(alliance);
                 Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.73, 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceTransform);
 
                 Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(1.1, 0.6, Rotation2d.fromDegrees(60)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceTransform);
 
                 Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2.5, 1.5, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
-                                getConstraints()).transformBy(allianceTransform);
+                                getConstraints()).relativeTo(allianceTransform);
 
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_RIGHT,
@@ -196,27 +193,27 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command leftTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem) {
+        public static final Command leftTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
                 // placeholder
                 TrajectoryConfig config = getConstraints().setReversed(true);
-                Transform2d allianceTransform = getAllianceTransform();
+                Pose2d allianceTransform = getAllianceOrigin(alliance);
                 Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.73, 8 - 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(0)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceTransform);
 
                 Trajectory moveOutOfTheWayTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(-60)),
                                 List.of(),
                                 new Pose2d(1.25, 8 - 0.48, Rotation2d.fromDegrees(-45)),
-                                config).transformBy(allianceTransform);
+                                config).relativeTo(allianceTransform);
 
                 Trajectory backToHangTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(-60)),
                                 List.of(),
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(-180.0)),
-                                getConstraints()).transformBy(allianceTransform);
+                                getConstraints()).relativeTo(allianceTransform);
 
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_LEFT,

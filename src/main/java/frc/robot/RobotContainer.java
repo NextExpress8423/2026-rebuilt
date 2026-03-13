@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -70,11 +71,14 @@ public class RobotContainer {
         SmartDashboard.putData("AutoHangPosition", autoHangSelection);
         Autos.hangPositionChooser = autoHangSelection;
 
-        autoChooser.addOption("Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem));
-        autoChooser.addOption("Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem));
-        autoChooser.addOption("Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem));
-        autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
-        autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
+        autoChooser.addOption("BLUE Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
+        autoChooser.addOption("BLUE Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem, Alliance.Blue));
+        autoChooser.addOption("BLUE Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem, Alliance.Blue));
+        autoChooser.addOption("RED Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem, Alliance.Red));
+        autoChooser.addOption("RED Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem, Alliance.Red));
+        autoChooser.addOption("RED Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem, Alliance.Red));
+     //   autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
+      //  autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
         SmartDashboard.putData("Autos", autoChooser);
 
     }

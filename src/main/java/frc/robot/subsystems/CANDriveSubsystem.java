@@ -109,15 +109,9 @@ public class CANDriveSubsystem extends SubsystemBase {
 
     // set up differential drive class
     drive = new DifferentialDrive(leftLeader, rightLeader);
-    var alliance = DriverStation.getAlliance();
+    
 
-    hubTargeting = new HubTargeting(alliance.orElse(Alliance.Blue), this::getPose);
-
-    if (alliance.orElse(Alliance.Blue) == Alliance.Blue) {
-      resetPose = new Pose2d(3.57, 4.0, new Rotation2d(0));
-    } else {
-      resetPose = new Pose2d(12.97, 4.0, new Rotation2d(180));
-    }
+    hubTargeting = new HubTargeting(this::getPose);
 
     // Set can timeout. Because this project only sets parameters once on
     // construction, the timeout can be long without blocking robot operation. Code
@@ -180,6 +174,18 @@ public class CANDriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    if (resetPose == null) {
+      DriverStation.getAlliance().ifPresent(alliance -> {
+        if (alliance == Alliance.Blue) {
+          resetPose = new Pose2d(3.57, 4.0, new Rotation2d(0));
+        } else {
+          resetPose = new Pose2d(12.97, 4.0, new Rotation2d(180));
+        }
+      });
+      
+    }
+
     Pose2d pose = odometry.update(Rotation2d.fromDegrees(gyro.getYaw().getValueAsDouble()),
         leftLeader.getEncoder().getPosition(),
         rightLeader.getEncoder().getPosition());
