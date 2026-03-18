@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.List;
 
+import edu.wpi.first.epilogue.logging.NullBackend;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -102,7 +103,8 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
+        public static final Command hubAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem,
+                        Alliance alliance) {
                 HangPosition hangPosition = getHangPosition();
                 Pose2d allianceOrigin = getAllianceOrigin(alliance);
 
@@ -132,7 +134,6 @@ public final class Autos {
                                 new Pose2d(1.5, 4.3, Rotation2d.fromDegrees(180.0)),
                                 config).relativeTo(allianceOrigin);
 
-
                 Command doHangRoutine = new DynamicCommand<>(Autos::getHangPosition)
                                 .withOption(HangPosition.HANG_LEFT,
                                                 driveSubsystem.rotateToCommand(Rotation2d.fromDegrees(160)
@@ -154,7 +155,8 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command rightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
+        public static final Command rightTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem,
+                        Alliance alliance) {
                 // placeholder
                 TrajectoryConfig config = getConstraints().setReversed(true);
                 Pose2d allianceTransform = getAllianceOrigin(alliance);
@@ -193,7 +195,8 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command leftTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem, Alliance alliance) {
+        public static final Command leftTrench(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem,
+                        Alliance alliance) {
                 // placeholder
                 TrajectoryConfig config = getConstraints().setReversed(true);
                 Pose2d allianceTransform = getAllianceOrigin(alliance);
@@ -232,17 +235,68 @@ public final class Autos {
                                 .andThen(driveSubsystem.stop());
         }
 
-        public static final Command driveFowardFourMeters(CANDriveSubsystem driveSubsystem,
-                        CANFuelSubsystem ballSubsystem) {
-                TrajectoryConfig config = getConstraints().setReversed(false);
-                Trajectory driveFourMetersTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3, 2, Rotation2d.fromDegrees(90)),
+        public static final Command depoAuto(CANDriveSubsystem driveSubsystem, CANFuelSubsystem ballSubsystem,
+                        Alliance alliance) {
+                TrajectoryConfig config = getConstraints().setReversed(true);
+                Pose2d allianceTransform = getAllianceOrigin(alliance);
+                Trajectory leaveLeftTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(3.73, 8 - 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
-                                config);
-                return driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose())
-                                .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
+                                new Pose2d(1.5, 8 - 6, Rotation2d.fromDegrees(0)),
+                                config).relativeTo(allianceTransform);
+
+                Trajectory intoTheDepoWithTheeTrajectory = TrajectoryGenerator.generateTrajectory(
+                                new Pose2d(1.5, 8 - 6, Rotation2d.fromDegrees(0)),
+                                List.of(),
+                                
+                                new Pose2d(0.6, 8 - 6, Rotation2d.fromDegrees(0)),
+                                config).relativeTo(allianceTransform);
+
+                return driveSubsystem.resetOdometryCommand(leaveLeftTrenchTrajectory.getInitialPose())
+                                .andThen(driveSubsystem.followTrajectoryCommand(leaveLeftTrenchTrajectory))
+                                .andThen(driveSubsystem.rotateToCommand(
+                                                Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
+                                                false))
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(driveSubsystem.rotateToCommand(
+                                                Rotation2d.fromDegrees(0).plus(allianceTransform.getRotation()), false))
+                                .andThen(driveSubsystem.followTrajectoryCommand(intoTheDepoWithTheeTrajectory))
+                                .andThen(driveSubsystem.rotateToCommand(
+                                                Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
+                                                false))
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(driveSubsystem.stop());
         }
 
 }
+
+/*
+ * Reference \_^o^_/
+ * Trajectory leaveTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
+ * new Pose2d(3.73, 8 - 1.23, Rotation2d.fromDegrees(0)),
+ * List.of(),
+ * new Pose2d(2.5, 8 - 1.7, Rotation2d.fromDegrees(0)),
+ * config).relativeTo(allianceTransform);
+ */
+
+/*
+ * DIRTY DRIVE FOWARD FOUR METERS >~< moved out of the way
+ * 
+ * public static final Command driveFowardFourMeters(CANDriveSubsystem
+ * driveSubsystem,
+ * CANFuelSubsystem ballSubsystem) {
+ * TrajectoryConfig config = getConstraints().setReversed(false);
+ * Trajectory driveFourMetersTrajectory =
+ * TrajectoryGenerator.generateTrajectory(
+ * new Pose2d(3, 2, Rotation2d.fromDegrees(90)),
+ * List.of(),
+ * new Pose2d(3, 6, Rotation2d.fromDegrees(90)),
+ * config);
+ * return
+ * driveSubsystem.resetOdometryCommand(driveFourMetersTrajectory.getInitialPose(
+ * ))
+ * .andThen(driveSubsystem.followTrajectoryCommand(driveFourMetersTrajectory))
+ * .andThen(driveSubsystem.stop());
+ * }
+ * 
+ */
