@@ -139,20 +139,43 @@ public class RobotContainer {
                 .whileTrue(driveSubsystem.shakeThingsUpCommand());
 
         driverController.rightBumper()
-                .and(driverController.a())
-                .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                .whileTrue(Commands.startEnd(
+                        () -> {
+                                DRIVE_SCALING = 0.85;
+                                ROTATION_SCALING = 0.7;
+                        }, 
+                        () -> {
+                        DRIVE_SCALING = 0.75;
+                        ROTATION_SCALING = 0.6;
+                        }));
+                        
+        driverController.leftBumper()
+                .whileTrue(Commands.startEnd(
+                        () -> {
+                                DRIVE_SCALING = 0.6;
+                                ROTATION_SCALING = 0.5;
+                        }, 
+                        () -> {
+                        DRIVE_SCALING = 0.75;
+                        ROTATION_SCALING = 0.6;
+                        }));
 
-        driverController.rightBumper()
-                .and(driverController.b())
-                .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
 
-        driverController.rightBumper()
-                .and(driverController.x())
-                .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        // driverController.rightBumper()
+        //         .and(driverController.a())
+        //         .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
 
-        driverController.rightBumper()
-                .and(driverController.y())
-                .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        // driverController.rightBumper()
+        //         .and(driverController.b())
+        //         .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+
+        // driverController.rightBumper()
+        //         .and(driverController.x())
+        //         .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+
+        // driverController.rightBumper()
+        //         .and(driverController.y())
+        //         .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     /**

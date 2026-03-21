@@ -241,7 +241,7 @@ public final class Autos {
                 TrajectoryConfig config = getConstraints().setReversed(true);
                 Pose2d allianceTransform = getAllianceOrigin(alliance);
                 Trajectory leaveLeftTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(3.73,  1.23, Rotation2d.fromDegrees(0)),
+                                new Pose2d(3.73,  8 - 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
                                 new Pose2d(1.5, 6, Rotation2d.fromDegrees(0)),
                                 config).relativeTo(allianceTransform);
@@ -257,14 +257,14 @@ public final class Autos {
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
                                                 false))
-                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                              //  .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(0).plus(allianceTransform.getRotation()), false))
                                 .andThen(driveSubsystem.followTrajectoryCommand(intoTheDepoWithTheeTrajectory))
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
                                                 false))
-                                .andThen(ballSubsystem.autoShootRoutineCommand())
+                              //  .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(driveSubsystem.stop());
         }
 
