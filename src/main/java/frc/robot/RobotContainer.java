@@ -77,6 +77,8 @@ public class RobotContainer {
         autoChooser.addOption("RED Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("RED Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("RED Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem, Alliance.Red));
+        autoChooser.addOption("Blue Left Hide Away Auto", Autos.hideAwayAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
+        autoChooser.addOption("Blue Left Trench Depo Auto", Autos.depoAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
      //   autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
       //  autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
         SmartDashboard.putData("Autos", autoChooser);
@@ -137,20 +139,43 @@ public class RobotContainer {
                 .whileTrue(driveSubsystem.shakeThingsUpCommand());
 
         driverController.rightBumper()
-                .and(driverController.a())
-                .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                .whileTrue(Commands.startEnd(
+                        () -> {
+                                DRIVE_SCALING = 0.85;
+                                ROTATION_SCALING = 0.7;
+                        }, 
+                        () -> {
+                        DRIVE_SCALING = 0.75;
+                        ROTATION_SCALING = 0.6;
+                        }));
+                        
+        driverController.leftBumper()
+                .whileTrue(Commands.startEnd(
+                        () -> {
+                                DRIVE_SCALING = 0.6;
+                                ROTATION_SCALING = 0.5;
+                        }, 
+                        () -> {
+                        DRIVE_SCALING = 0.75;
+                        ROTATION_SCALING = 0.6;
+                        }));
 
-        driverController.rightBumper()
-                .and(driverController.b())
-                .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
 
-        driverController.rightBumper()
-                .and(driverController.x())
-                .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        // driverController.rightBumper()
+        //         .and(driverController.a())
+        //         .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
 
-        driverController.rightBumper()
-                .and(driverController.y())
-                .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        // driverController.rightBumper()
+        //         .and(driverController.b())
+        //         .whileTrue(driveSubsystem.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+
+        // driverController.rightBumper()
+        //         .and(driverController.x())
+        //         .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kForward));
+
+        // driverController.rightBumper()
+        //         .and(driverController.y())
+        //         .whileTrue(driveSubsystem.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     /**

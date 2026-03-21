@@ -94,11 +94,11 @@ public class CANFuelSubsystem extends SubsystemBase {
   }
 
   public void climb(double speed) {
-    double posistion = climberMotor.getEncoder().getPosition();
+   double posistion = climberMotor.getEncoder().getPosition();
     if (speed > 0.01 && posistion > 210) {
       climberMotor.set(0);
-    } else if (speed < -0.01 && posistion < 0) {
-      climberMotor.set(0);
+    } else if (speed < -0.01 && posistion < -3000) {
+    climberMotor.set(0);
     } else {
       climberMotor.set(speed);
     }
