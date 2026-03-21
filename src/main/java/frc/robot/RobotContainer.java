@@ -77,6 +77,8 @@ public class RobotContainer {
         autoChooser.addOption("RED Hub Auto", Autos.hubAuto(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("RED Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("RED Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem, Alliance.Red));
+        autoChooser.addOption("Blue Left Hide Away Auto", Autos.hideAwayAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
+        autoChooser.addOption("Blue Left Trench Depo Auto", Autos.depoAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
      //   autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
       //  autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
         SmartDashboard.putData("Autos", autoChooser);
