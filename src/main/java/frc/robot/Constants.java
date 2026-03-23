@@ -20,10 +20,10 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static final class DriveConstants {
     // Motor controller IDs for drivetrain motors
-    public static final int LEFT_LEADER_ID = 1;//6;
-    public static final int LEFT_FOLLOWER_ID = 8;//2;
-    public static final int RIGHT_LEADER_ID = 6;//1;
-    public static final int RIGHT_FOLLOWER_ID = 2;//8;
+    public static final int LEFT_LEADER_ID = 6;//1;
+    public static final int LEFT_FOLLOWER_ID = 2;//8;
+    public static final int RIGHT_LEADER_ID = 1;//6;
+    public static final int RIGHT_FOLLOWER_ID = 8;//2;
     public static final int PIGEON_ID = 7;
     public static final double metersPerRotation = 1.03175 * Units.inchesToMeters(6.0 * Math.PI / 8.45);
     public static final double metersPerSecondConversion = metersPerRotation / 60.0;
@@ -62,7 +62,8 @@ public final class Constants {
   public static final class FuelConstants {
     // Motor controller IDs for Fuel Mechanism motors
     public static final int FEEDER_MOTOR_ID = 10;
-    public static final int INTAKE_LAUNCHER_MOTOR_ID = 3;
+    public static final int LAUNCHER_MOTOR_ID = 3;
+    public static final int INTAKE_MOTOR_ID = 4;
 
     // Current limit and nominal voltage for fuel mechanism motors.
     public static final int FEEDER_MOTOR_CURRENT_LIMIT = 60;

@@ -39,7 +39,7 @@ public class CANFuelSubsystem extends SubsystemBase {
   public CANFuelSubsystem(Supplier<Double> distanceToHubSupplier) {
     // create brushed motors for each of the motors on the launcher mechanism
     feederRoller = new SparkMax(FEEDER_MOTOR_ID, MotorType.kBrushless);
-    intakeLauncherRoller = new TalonFX(INTAKE_LAUNCHER_MOTOR_ID);
+    intakeLauncherRoller = new TalonFX(LAUNCHER_MOTOR_ID);
     launcherVelocityRequest = new VelocityVoltage(0.0).withSlot(0);
 
     this.distanceToHubSupplier = distanceToHubSupplier;

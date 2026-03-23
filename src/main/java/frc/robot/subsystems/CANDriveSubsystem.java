@@ -151,6 +151,8 @@ public class CANDriveSubsystem extends SubsystemBase {
     config.inverted(false);
     leftLeader.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    resetPose = new Pose2d(3.57, 4.0, new Rotation2d(0));
+
     routine = new SysIdRoutine(
         new SysIdRoutine.Config(),
         new SysIdRoutine.Mechanism(
@@ -175,7 +177,7 @@ public class CANDriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 
-    if (resetPose == null) {
+    if (resetPose == null || DriverStation.isDisabled()) {
       DriverStation.getAlliance().ifPresent(alliance -> {
         if (alliance == Alliance.Blue) {
           resetPose = new Pose2d(3.57, 4.0, new Rotation2d(0));

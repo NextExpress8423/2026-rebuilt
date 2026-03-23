@@ -22,6 +22,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.Constants;
@@ -255,14 +257,15 @@ public final class Autos {
                 return driveSubsystem.resetOdometryCommand(leaveLeftTrenchTrajectory.getInitialPose())
                                 .andThen(driveSubsystem.followTrajectoryCommand(leaveLeftTrenchTrajectory))
                                 .andThen(driveSubsystem.rotateToCommand(
-                                                Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
+                                                Rotation2d.fromDegrees(-40).plus(allianceTransform.getRotation()),
                                                 false))
                               //  .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(Commands.waitSeconds(1))
                                 .andThen(driveSubsystem.rotateToCommand(
-                                                Rotation2d.fromDegrees(0).plus(allianceTransform.getRotation()), false))
+                                                Rotation2d.fromDegrees(0).plus(allianceTransform.getRotation()), true))
                                 .andThen(driveSubsystem.followTrajectoryCommand(intoTheDepoWithTheeTrajectory))
                                 .andThen(driveSubsystem.rotateToCommand(
-                                                Rotation2d.fromDegrees(-60).plus(allianceTransform.getRotation()),
+                                                Rotation2d.fromDegrees(-30).plus(allianceTransform.getRotation()),
                                                 false))
                               //  .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(driveSubsystem.stop());
