@@ -63,10 +63,10 @@ public class CANFuelSubsystem extends SubsystemBase {
     LauncherConfig.CurrentLimits.SupplyCurrentLimit = (FEEDER_MOTOR_CURRENT_LIMIT);
     LauncherConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     LauncherConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    LauncherConfig.Slot0.kS = 0.48;
-    LauncherConfig.Slot0.kV = 0.1165;
+    LauncherConfig.Slot0.kS = 0.14;
+    LauncherConfig.Slot0.kV = 0.1075;
     LauncherConfig.Slot0.kA = 0.0;
-    LauncherConfig.Slot0.kP = 0.6;
+    LauncherConfig.Slot0.kP = 0.2;
     LauncherConfig.Slot0.kI = 0.0;
     LauncherConfig.Slot0.kD = 0.0;
     launcher.getConfigurator().apply(LauncherConfig);
@@ -96,7 +96,7 @@ public class CANFuelSubsystem extends SubsystemBase {
      //   3585.34004
     //return (1400 * distanceToHub + 1166.66667); // 3088.93403;
     SmartDashboard.putString("It deployed", "asdf");
-    return (1430 * distanceToHub + 1180);
+    return (62.77623 * Math.pow(distanceToHub, 2) + 413.13516 * (distanceToHub) + 2754.92691);
   }
 
   public void climb(double speed) {
