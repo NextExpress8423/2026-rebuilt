@@ -129,6 +129,7 @@ public final class Autos {
                 Trajectory prepareToClimbRightTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(2.5, 4.0, Rotation2d.fromDegrees(-110.0)),
                                 List.of(),
+                           
                                 new Pose2d(1.5, 3.2, Rotation2d.fromDegrees(-180.0)),
                                 config).relativeTo(allianceOrigin);
                 Trajectory prepareToClimbLeftTrajectory = TrajectoryGenerator.generateTrajectory(
@@ -245,13 +246,13 @@ public final class Autos {
                 Trajectory leaveLeftTrenchTrajectory = TrajectoryGenerator.generateTrajectory(
                                 new Pose2d(3.73,  8 - 1.23, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(1.5, 6, Rotation2d.fromDegrees(0)),
+                                new Pose2d(2, 6, Rotation2d.fromDegrees(0)),
                                 config).relativeTo(allianceTransform);
 
                 Trajectory intoTheDepoWithTheeTrajectory = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(1.5,  6, Rotation2d.fromDegrees(0)),
+                                new Pose2d(2,  6, Rotation2d.fromDegrees(0)),
                                 List.of(),
-                                new Pose2d(0.6,  6, Rotation2d.fromDegrees(0)),
+                                new Pose2d(0.7,  5.8, Rotation2d.fromDegrees(0)),
                                 config).relativeTo(allianceTransform);
 
                 return driveSubsystem.resetOdometryCommand(leaveLeftTrenchTrajectory.getInitialPose())
@@ -259,7 +260,7 @@ public final class Autos {
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(-40).plus(allianceTransform.getRotation()),
                                                 false))
-                              //  .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(Commands.waitSeconds(1))
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(0).plus(allianceTransform.getRotation()), true))
@@ -267,7 +268,7 @@ public final class Autos {
                                 .andThen(driveSubsystem.rotateToCommand(
                                                 Rotation2d.fromDegrees(-30).plus(allianceTransform.getRotation()),
                                                 false))
-                              //  .andThen(ballSubsystem.autoShootRoutineCommand())
+                                .andThen(ballSubsystem.autoShootRoutineCommand())
                                 .andThen(driveSubsystem.stop());
         }
 

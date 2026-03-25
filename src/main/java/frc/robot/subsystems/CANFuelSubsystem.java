@@ -180,7 +180,7 @@ public class CANFuelSubsystem extends SubsystemBase {
 
   public Command autoShootRoutineCommand() {
     return spinUpCommand().withTimeout(1)
-        .andThen(launchCommand().withTimeout(10))
+        .andThen(launchCommand().withTimeout(3))
         .andThen(runOnce(() -> stop()));
   }
 
