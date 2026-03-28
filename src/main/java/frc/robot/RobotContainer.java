@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -64,6 +65,8 @@ public class RobotContainer {
         // Set the options to show up in the Dashboard for selecting auto modes. If you
         // add additional auto modes you can add additional lines here with
         // autoChooser.addOption
+
+        CameraServer.startAutomaticCapture();
 
         autoHangSelection.setDefaultOption(HangPosition.NO_HANG.toString(), HangPosition.NO_HANG);
         autoHangSelection.addOption(HangPosition.HANG_LEFT.toString(), HangPosition.HANG_LEFT);

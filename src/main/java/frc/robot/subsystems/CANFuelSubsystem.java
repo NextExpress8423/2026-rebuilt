@@ -96,7 +96,7 @@ public class CANFuelSubsystem extends SubsystemBase {
      //   3585.34004
     //return (1400 * distanceToHub + 1166.66667); // 3088.93403;
     SmartDashboard.putString("It deployed", "asdf");
-    return (62.77623 * Math.pow(distanceToHub, 2) + 413.13516 * (distanceToHub) + 2754.92691);
+    return (62.77623 * Math.pow(distanceToHub, 2) + 413.13516 * (distanceToHub) + 2825.0); //2754.92691
   }
 
   public void climb(double speed) {
@@ -179,7 +179,7 @@ public class CANFuelSubsystem extends SubsystemBase {
   }
 
   public Command autoShootRoutineCommand() {
-    return spinUpCommand().withTimeout(1)
+    return spinUpCommand().withTimeout(0.6)
         .andThen(launchCommand().withTimeout(3))
         .andThen(runOnce(() -> stop()));
   }

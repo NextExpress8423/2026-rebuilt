@@ -296,6 +296,10 @@ public class CANDriveSubsystem extends SubsystemBase {
         () -> drive.arcadeDrive(0.0, 0.0));
   }
 
+  public Command rotateToCommand(Rotation2d heading) {
+    return rotateToCommand(heading, getPose().getRotation().getDegrees() < heading.getDegrees());
+  }
+
   public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
     return runEnd(
         () -> drive.arcadeDrive(0.0, isCCW ? 0.45 : -0.45), 
