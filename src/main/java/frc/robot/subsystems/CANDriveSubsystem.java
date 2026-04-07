@@ -206,15 +206,10 @@ public class CANDriveSubsystem extends SubsystemBase {
       }
     field.setRobotPose(pose);
 
-    var wheelSpeeds = getWheelSpeeds();
-    SmartDashboard.putNumber("Left Wheel V", wheelSpeeds.leftMetersPerSecond);
-    SmartDashboard.putNumber("Right Wheel V", wheelSpeeds.rightMetersPerSecond);
-    SmartDashboard.putNumber("Left Wheel V Follow", leftFollower.getEncoder().getVelocity());
-    SmartDashboard.putNumber("Right Wheel V Follow", rightFollower.getEncoder().getVelocity());
-    SmartDashboard.putNumber("Left Wheel P", leftLeader.getEncoder().getPosition());
-    SmartDashboard.putNumber("Right Wheel P", rightLeader.getEncoder().getPosition());
     SmartDashboard.putNumber("Left Power", leftLeader.getAppliedOutput());
     SmartDashboard.putNumber("Right Power", rightLeader.getAppliedOutput());
+    SmartDashboard.putNumber("Left Current", leftLeader.getOutputCurrent() + leftFollower.getOutputCurrent());
+    SmartDashboard.putNumber("Right Current", rightLeader.getOutputCurrent() + rightFollower.getOutputCurrent());
 
     SmartDashboard.putNumber("Distance To Hub", hubTargeting.getDistanceToHub());
   }
@@ -281,28 +276,29 @@ public class CANDriveSubsystem extends SubsystemBase {
         () -> {
           Rotation2d angleToHubRotation2d = hubTargeting.getAngleToHub();
           double errorDegrees = angleToHubRotation2d.minus(getPose().getRotation()).getDegrees();
-          SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
-          SmartDashboard.putNumber("errorDegrees", errorDegrees);
+          double turnSpeed = 0.0;
 
           if (Math.abs(errorDegrees) > 2) {
-            double turnSpeed = MathUtil.clamp(
+            turnSpeed = MathUtil.clamp(
                 Math.signum(errorDegrees) * Math.max(Math.abs(errorDegrees * 0.008), 0.26),
-                -0.6, 0.6);
-            drive.arcadeDrive(0.0, turnSpeed);
-          } else {
-            drive.arcadeDrive(0.0, 0.0);
+                -0.6, 0.6); 
           }
+
+          drive.arcadeDrive(0.0, turnSpeed);
+          SmartDashboard.putNumber("AngleToHub", angleToHubRotation2d.getDegrees());
+          SmartDashboard.putNumber("errorDegrees", errorDegrees);
+          SmartDashboard.putNumber("autoTurnSpeed", turnSpeed);
         },
         () -> drive.arcadeDrive(0.0, 0.0));
   }
 
   public Command rotateToCommand(Rotation2d heading) {
-    return rotateToCommand(heading, getPose().getRotation().getDegrees() < heading.getDegrees());
+    return rotateToCommand(heading, getPose().getRotation().getDegrees() > heading.getDegrees());
   }
 
   public Command rotateToCommand(Rotation2d heading, boolean isCCW) {
     return runEnd(
-        () -> drive.arcadeDrive(0.0, isCCW ? 0.45 : -0.45), 
+        () -> drive.arcadeDrive(0.0, isCCW ? 0.35 : -0.35), 
         () -> drive.arcadeDrive(0.0, 0.0)).until(
             () -> Math.abs(getPose().getRotation().getDegrees() - heading.getDegrees()) < 5.0);
     // return new Command() {

@@ -95,7 +95,6 @@ public class CANFuelSubsystem extends SubsystemBase {
      //   327.0665 * distanceToHub +
      //   3585.34004
     //return (1400 * distanceToHub + 1166.66667); // 3088.93403;
-    SmartDashboard.putString("It deployed", "asdf");
     return (62.77623 * Math.pow(distanceToHub, 2) + 413.13516 * (distanceToHub) + 2825.0); //2754.92691
   }
 
@@ -188,5 +187,8 @@ public class CANFuelSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     SmartDashboard.putNumber("actual launcher RPM", 60 * launcher.getVelocity().getValue().magnitude());
+    SmartDashboard.putNumber("Intake Current", intake.getOutputCurrent());
+    SmartDashboard.putNumber("Hopper Current", feederRoller.getOutputCurrent());
+    SmartDashboard.putNumber("Flywheel Current", launcher.getSupplyCurrent().getValueAsDouble());
   }
 }

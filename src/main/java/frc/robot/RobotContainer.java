@@ -18,6 +18,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import static frc.robot.Constants.OperatorConstants.*;
+
+import java.lang.invoke.VarHandle.AccessMode;
+
 import static frc.robot.Constants.FuelConstants.*;
 import frc.robot.commands.Autos;
 import frc.robot.subsystems.CANDriveSubsystem;
@@ -46,7 +49,7 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(
             DRIVER_CONTROLLER_PORT);
 
-    private final SlewRateLimiter fowardSlewRateLimiter = new SlewRateLimiter(4);
+    private final SlewRateLimiter fowardSlewRateLimiter = new SlewRateLimiter(3);
     private final SlewRateLimiter trueningSlewRateLimiter = new SlewRateLimiter(4);
     // The operator's controller
     private final CommandXboxController operatorController = new CommandXboxController(
@@ -81,6 +84,7 @@ public class RobotContainer {
         autoChooser.addOption("RED Right Trench Auto", Autos.rightTrench(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("RED Left Trench Auto", Autos.leftTrench(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("Blue Left Hide Away Auto", Autos.hideAwayAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
+       autoChooser.addOption("RED Left Trench Depo Auto", Autos.REDdepoAuto(driveSubsystem, ballSubsystem, Alliance.Red));
         autoChooser.addOption("Blue Left Trench Depo Auto", Autos.depoAuto(driveSubsystem, ballSubsystem, Alliance.Blue));
      //   autoChooser.addOption("Drive Foward Four Meters", Autos.driveFowardFourMeters(driveSubsystem, ballSubsystem));
       //  autoChooser.setDefaultOption("Autonomous", Autos.exampleAuto(driveSubsystem, ballSubsystem));
